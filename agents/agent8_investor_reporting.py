@@ -220,7 +220,7 @@ class InvestorReportingAgent:
         total_mv = sum(h.market_value for h in portfolio.holdings)
         n_pos    = len(portfolio.holdings)
         return (
-            f"Portfolio NAV: ${portfolio.total_nav/1e6:.1f}M  |  "
+            f"Portfolio NAV: ₹{portfolio.total_nav/1e6:.1f}M  |  "
             f"Positions: {n_pos}  |  Cash: {portfolio.cash_weight*100:.1f}%  |  "
             f"Benchmark: {portfolio.benchmark}\n\n"
             f"YTD Portfolio Return:  {port_return*100:+.2f}%\n"

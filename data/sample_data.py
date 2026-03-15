@@ -413,7 +413,7 @@ def generate_portfolio(price_data: Dict[str, PriceData], nav: float = 500_000_00
         as_of_date=datetime.now(),
         total_nav=nav,
         holdings=holdings,
-        benchmark="S&P 500",
+        benchmark="Nifty 50",
         cash_weight=cash_weight,
         inception_date=datetime(2020, 1, 1),
     )
