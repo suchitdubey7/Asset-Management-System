@@ -38,7 +38,7 @@ class InvestorReportingAgent:
     AGENT_NAME = "Investor Reporting Agent"
     VERSION    = "1.0.0"
 
-    BENCHMARK_RETURN = 0.082    # S&P 500 YTD proxy (can be injected)
+    BENCHMARK_RETURN = 0.0337    # Nifty 50 YTD proxy (updated to current value)
 
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or {}
