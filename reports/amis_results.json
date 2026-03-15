@@ -1,6 +1,6 @@
 {
-  "run_id": "RUN-20260315-135016",
-  "timestamp": "2026-03-15T13:50:58.624605",
+  "run_id": "RUN-20260315-140331",
+  "timestamp": "2026-03-15T14:04:08.435346",
   "portfolio": {
     "name": "AMIS Alpha Equity Fund",
     "nav": 500000000,
@@ -19,7 +19,7 @@
     "sharpe": -4.5117,
     "sortino": -6.3815,
     "beta": 0.814,
-    "liquidity": 0.7768,
+    "liquidity": 0.7775,
     "max_drawdown": -0.9671,
     "sector_exposures": {
       "Financials": 0.2,
@@ -36,8 +36,8 @@
     "factor_exposures": {
       "Market Beta": 0.814,
       "Momentum": -0.2303,
-      "Quality (ROIC)": 0.278,
-      "Value (1/PE)": 0.0352,
+      "Quality (ROIC)": 0.2796,
+      "Value (1/PE)": 0.0328,
       "Size (log MCap)": 0.7622,
       "Low Volatility": 0.3452
     },
@@ -53,35 +53,36 @@
     }
   },
   "macro": {
-    "regime": "Peak",
-    "confidence": 0.4545,
-    "cpi": 3.0849,
-    "fed_rate": 5.1272,
-    "yield_10y": 4.2015,
-    "yield_curve": -0.5281,
-    "vix": 19.77,
-    "hy_spread": 347.7657,
-    "oil_wti": 72.51,
+    "regime": "Expansion",
+    "confidence": 0.4118,
+    "cpi": 5.2202,
+    "fed_rate": 6.2801,
+    "yield_10y": 7.3471,
+    "yield_curve": -0.2084,
+    "vix": 16.17,
+    "hy_spread": 239.9569,
+    "oil_wti": 83.86,
     "sector_tilts": {
-      "Energy": "Overweight",
-      "Materials": "Overweight",
-      "Financials": "Neutral",
-      "Technology": "Neutral",
-      "Consumer Discretionary": "Underweight",
-      "Industrials": "Neutral",
-      "Communication Services": "Underweight",
+      "Technology": "Overweight",
+      "Consumer Discretionary": "Overweight",
+      "Industrials": "Overweight",
+      "Financials": "Overweight",
+      "Communication Services": "Neutral",
       "Healthcare": "Neutral",
-      "Consumer Staples": "Overweight",
-      "Utilities": "Overweight",
+      "Materials": "Overweight",
+      "Energy": "Neutral",
+      "Consumer Staples": "Underweight",
+      "Utilities": "Underweight",
       "Real Estate": "Underweight"
     },
     "signals": {
-      "US Equities": -0.2,
-      "International Equities": -0.1,
-      "EM Equities": -0.35,
-      "US Treasuries": 0.1,
+      "US Equities": 0.7,
+      "International Equities": 0.5,
+      "EM Equities": 0.45,
+      "US Treasuries": 0.4,
+      "Investment Grade": 0.25,
       "High Yield": 0.1,
-      "Gold": 0.0,
+      "Gold": 0.3,
       "Oil/Energy": -0.1,
       "TIPS": 0.35,
       "Cash": 0.1
@@ -90,340 +91,428 @@
   "alerts": {
     "total": 3,
     "critical": 0,
-    "high": 1,
+    "high": 0,
     "list": [
       {
+        "type": "Earnings Downgrade",
+        "severity": "Moderate",
+        "title": "DRREDDY.NS: Forward Guidance Cut \u2014 Earnings outlook deteriorating",
+        "action": "Monitor for further guidance revisions. Consider trailing stop-loss review."
+      },
+      {
+        "type": "Earnings Downgrade",
+        "severity": "Moderate",
+        "title": "ITC.NS: Forward Guidance Cut \u2014 Earnings outlook deteriorating",
+        "action": "Monitor for further guidance revisions. Consider trailing stop-loss review."
+      },
+      {
         "type": "Macro Regime Shift",
-        "severity": "High",
-        "title": "Deeply Inverted Yield Curve (-0.53%) \u2014 Recession signal",
-        "action": "Increase defensive exposure (Healthcare, Consumer Staples, Utilities). Reduce beta and consider increasing cash/Treasury allocation."
-      },
-      {
-        "type": "Earnings Downgrade",
         "severity": "Moderate",
-        "title": "HINDUNILVR.NS: Forward Guidance Cut \u2014 Earnings outlook deteriorating",
-        "action": "Monitor for further guidance revisions. Consider trailing stop-loss review."
-      },
-      {
-        "type": "Earnings Downgrade",
-        "severity": "Moderate",
-        "title": "NTPC.NS: Forward Guidance Cut \u2014 Earnings outlook deteriorating",
-        "action": "Monitor for further guidance revisions. Consider trailing stop-loss review."
+        "title": "Inflation Re-acceleration: CPI 5.2% \u2014 Policy risk elevated",
+        "action": "Review duration-sensitive positions. Consider TIPS and commodity-linked assets as inflation hedges."
       }
     ]
   },
   "allocations": [
     {
-      "ticker": "DRREDDY.NS",
-      "company": "Dr. Reddy's Laboratories",
+      "ticker": "SUNPHARMA.NS",
+      "company": "Sun Pharmaceutical",
       "sector": "Healthcare",
-      "weight": 0.31963,
-      "signal": 0.2479,
-      "exp_return": 0.1064,
+      "weight": 0.1,
+      "signal": 0.386,
+      "exp_return": 0.1199,
       "conviction": "Medium"
     },
     {
-      "ticker": "GRASIM.NS",
-      "company": "Grasim Industries",
-      "sector": "Materials",
-      "weight": 0.13027,
-      "signal": 0.0784,
-      "exp_return": 0.0422,
-      "conviction": "Low"
-    },
-    {
-      "ticker": "RELIANCE.NS",
-      "company": "Reliance Industries",
-      "sector": "Energy",
-      "weight": 0.11539,
-      "signal": 0.2581,
-      "exp_return": 0.0745,
+      "ticker": "DRREDDY.NS",
+      "company": "Dr. Reddy's Laboratories",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "signal": 0.3982,
+      "exp_return": 0.1407,
       "conviction": "Medium"
     },
     {
       "ticker": "NTPC.NS",
       "company": "NTPC Limited",
       "sector": "Utilities",
-      "weight": 0.11539,
-      "signal": 0.5579,
-      "exp_return": 0.1424,
-      "conviction": "High"
+      "weight": 0.1,
+      "signal": 0.2128,
+      "exp_return": 0.1191,
+      "conviction": "Medium"
+    },
+    {
+      "ticker": "GRASIM.NS",
+      "company": "Grasim Industries",
+      "sector": "Materials",
+      "weight": 0.09869,
+      "signal": 0.1225,
+      "exp_return": 0.051,
+      "conviction": "Low"
+    },
+    {
+      "ticker": "MARUTI.NS",
+      "company": "Maruti Suzuki India",
+      "sector": "Consumer Discretionary",
+      "weight": 0.09305,
+      "signal": 0.1284,
+      "exp_return": 0.0443,
+      "conviction": "Low"
+    },
+    {
+      "ticker": "HDFCBANK.NS",
+      "company": "HDFC Bank",
+      "sector": "Financials",
+      "weight": 0.08639,
+      "signal": 0.0716,
+      "exp_return": 0.0498,
+      "conviction": "Low"
+    },
+    {
+      "ticker": "BAJFINANCE.NS",
+      "company": "Bajaj Finance",
+      "sector": "Financials",
+      "weight": 0.08162,
+      "signal": 0.1261,
+      "exp_return": 0.0775,
+      "conviction": "Low"
     },
     {
       "ticker": "POWERGRID.NS",
       "company": "Power Grid Corporation",
       "sector": "Utilities",
-      "weight": 0.11539,
-      "signal": 0.5148,
-      "exp_return": 0.1467,
-      "conviction": "High"
-    },
-    {
-      "ticker": "HINDUNILVR.NS",
-      "company": "Hindustan Unilever",
-      "sector": "Consumer Staples",
-      "weight": 0.08967,
-      "signal": 0.0461,
-      "exp_return": 0.0333,
+      "weight": 0.07159,
+      "signal": 0.0934,
+      "exp_return": 0.097,
       "conviction": "Low"
     },
     {
-      "ticker": "SUNPHARMA.NS",
-      "company": "Sun Pharmaceutical",
-      "sector": "Healthcare",
-      "weight": 0.08425,
-      "signal": 0.7237,
-      "exp_return": 0.1835,
-      "conviction": "High"
+      "ticker": "ADANIPORTS.NS",
+      "company": "Adani Ports and Special",
+      "sector": "Industrials",
+      "weight": 0.06124,
+      "signal": 0.1248,
+      "exp_return": 0.0583,
+      "conviction": "Low"
+    },
+    {
+      "ticker": "ULTRACEMCO.NS",
+      "company": "UltraTech Cement",
+      "sector": "Materials",
+      "weight": 0.05731,
+      "signal": 0.0784,
+      "exp_return": 0.0499,
+      "conviction": "Low"
+    },
+    {
+      "ticker": "TCS.NS",
+      "company": "Tata Consultancy Services",
+      "sector": "Technology",
+      "weight": 0.04939,
+      "signal": 0.0706,
+      "exp_return": 0.0444,
+      "conviction": "Low"
+    },
+    {
+      "ticker": "RELIANCE.NS",
+      "company": "Reliance Industries",
+      "sector": "Energy",
+      "weight": 0.03035,
+      "signal": 0.0326,
+      "exp_return": 0.0444,
+      "conviction": "Low"
+    },
+    {
+      "ticker": "WIPRO.NS",
+      "company": "Wipro Limited",
+      "sector": "Technology",
+      "weight": 0.02818,
+      "signal": 0.0431,
+      "exp_return": 0.0312,
+      "conviction": "Low"
+    },
+    {
+      "ticker": "LT.NS",
+      "company": "Larsen & Toubro",
+      "sector": "Industrials",
+      "weight": 0.01221,
+      "signal": 0.0215,
+      "exp_return": 0.0295,
+      "conviction": "Low"
     }
   ],
   "scenarios": [
     {
       "name": "2008 Global Financial Crisis Replay",
-      "impact": -0.2306,
+      "impact": -0.3594,
       "recovery_months": 48
     },
     {
-      "name": "COVID-19 Style Market Shock",
-      "impact": -0.1994,
-      "recovery_months": 6
-    },
-    {
       "name": "Global Recession (-3% GDP)",
-      "impact": -0.165,
+      "impact": -0.2599,
       "recovery_months": 18
     },
     {
-      "name": "Interest Rate Spike (+200bps)",
-      "impact": -0.0863,
-      "recovery_months": 12
+      "name": "COVID-19 Style Market Shock",
+      "impact": -0.2583,
+      "recovery_months": 6
     },
     {
       "name": "China-Taiwan Geopolitical Escalation",
-      "impact": -0.0447,
+      "impact": -0.1105,
       "recovery_months": 15
     },
     {
+      "name": "Interest Rate Spike (+200bps)",
+      "impact": -0.0787,
+      "recovery_months": 12
+    },
+    {
       "name": "Tech Sector Crash (-35%)",
-      "impact": -0.0126,
+      "impact": -0.0772,
       "recovery_months": 24
     },
     {
       "name": "Oil Price Shock (+60% in 3 months)",
-      "impact": 0.001,
+      "impact": -0.0543,
       "recovery_months": 9
     },
     {
       "name": "USD Currency Depreciation (-15%)",
-      "impact": 0.0196,
+      "impact": 0.0122,
       "recovery_months": 12
     }
   ],
   "research": {
     "TCS.NS": {
       "rating": "Hold",
-      "target": 2577.42,
-      "upside": 6.92,
-      "confidence": 0.077,
-      "revenue_trend": "Modest growth (+5.2% YoY) \u2014 gradual improvement"
+      "target": 2566.28,
+      "upside": 6.46,
+      "confidence": 0.0585,
+      "revenue_trend": "Modest growth (+8.4% YoY) \u2014 gradual improvement"
     },
     "INFY.NS": {
       "rating": "Sell",
-      "target": 1276.11,
-      "upside": 2.23,
-      "confidence": 0.1109,
-      "revenue_trend": "Modest growth (+5.0% YoY) \u2014 gradual improvement"
+      "target": 1272.9,
+      "upside": 1.97,
+      "confidence": 0.1212,
+      "revenue_trend": "Modest growth (+5.3% YoY) \u2014 gradual improvement"
     },
     "WIPRO.NS": {
       "rating": "Hold",
-      "target": 210.46,
-      "upside": 6.52,
-      "confidence": 0.0607,
-      "revenue_trend": "Modest growth (+4.1% YoY) \u2014 gradual improvement"
+      "target": 206.72,
+      "upside": 4.63,
+      "confidence": 0.0149,
+      "revenue_trend": "Modest growth (+6.7% YoY) \u2014 gradual improvement"
     },
     "HDFCBANK.NS": {
       "rating": "Hold",
-      "target": 871.09,
-      "upside": 6.62,
-      "confidence": 0.0648,
-      "revenue_trend": "Healthy growth (+11.0% YoY) \u2014 demand resilient"
+      "target": 876.96,
+      "upside": 7.34,
+      "confidence": 0.0936,
+      "revenue_trend": "Modest growth (+8.3% YoY) \u2014 gradual improvement"
     },
     "ICICIBANK.NS": {
       "rating": "Hold",
-      "target": 1339.09,
-      "upside": 6.72,
-      "confidence": 0.0687,
-      "revenue_trend": "Modest growth (+9.7% YoY) \u2014 gradual improvement"
+      "target": 1295.64,
+      "upside": 3.25,
+      "confidence": 0.0698,
+      "revenue_trend": "Healthy growth (+10.9% YoY) \u2014 demand resilient"
     },
     "KOTAKBANK.NS": {
       "rating": "Hold",
-      "target": 388.07,
-      "upside": 5.78,
-      "confidence": 0.0314,
-      "revenue_trend": "Healthy growth (+16.6% YoY) \u2014 demand resilient"
+      "target": 392.32,
+      "upside": 6.94,
+      "confidence": 0.0777,
+      "revenue_trend": "Healthy growth (+15.6% YoY) \u2014 demand resilient"
     },
     "BAJFINANCE.NS": {
       "rating": "Hold",
-      "target": 929.92,
-      "upside": 8.76,
-      "confidence": 0.1502,
-      "revenue_trend": "Strong acceleration (+22.1% YoY) \u2014 top-line momentum robust"
+      "target": 951.06,
+      "upside": 11.23,
+      "confidence": 0.2491,
+      "revenue_trend": "Healthy growth (+17.6% YoY) \u2014 demand resilient"
     },
     "RELIANCE.NS": {
       "rating": "Hold",
-      "target": 1504.66,
-      "upside": 8.98,
-      "confidence": 0.1591,
-      "revenue_trend": "Healthy growth (+11.8% YoY) \u2014 demand resilient"
+      "target": 1476.83,
+      "upside": 6.96,
+      "confidence": 0.0785,
+      "revenue_trend": "Modest growth (+9.9% YoY) \u2014 gradual improvement"
     },
     "MARUTI.NS": {
-      "rating": "Sell",
-      "target": 12704.04,
-      "upside": 0.9,
-      "confidence": 0.1641,
-      "revenue_trend": "Modest growth (+4.8% YoY) \u2014 gradual improvement"
+      "rating": "Hold",
+      "target": 13305.67,
+      "upside": 5.68,
+      "confidence": 0.027,
+      "revenue_trend": "Modest growth (+4.3% YoY) \u2014 gradual improvement"
     },
     "BHARTIARTL.NS": {
       "rating": "Hold",
-      "target": 1880.21,
-      "upside": 4.26,
-      "confidence": 0.0296,
-      "revenue_trend": "Modest growth (+6.7% YoY) \u2014 gradual improvement"
+      "target": 1956.42,
+      "upside": 8.49,
+      "confidence": 0.1394,
+      "revenue_trend": "Healthy growth (+10.7% YoY) \u2014 demand resilient"
     },
     "LT.NS": {
       "rating": "Hold",
-      "target": 3587.66,
-      "upside": 4.32,
-      "confidence": 0.0271,
-      "revenue_trend": "Modest growth (+3.6% YoY) \u2014 gradual improvement"
+      "target": 3597.98,
+      "upside": 4.62,
+      "confidence": 0.0151,
+      "revenue_trend": "Modest growth (+7.1% YoY) \u2014 gradual improvement"
     },
     "ADANIPORTS.NS": {
       "rating": "Hold",
-      "target": 1443.07,
-      "upside": 5.86,
-      "confidence": 0.0344,
-      "revenue_trend": "Healthy growth (+10.6% YoY) \u2014 demand resilient"
+      "target": 1472.99,
+      "upside": 8.05,
+      "confidence": 0.1221,
+      "revenue_trend": "Modest growth (+9.7% YoY) \u2014 gradual improvement"
     },
     "SUNPHARMA.NS": {
-      "rating": "Strong Buy",
-      "target": 2178.72,
-      "upside": 20.93,
-      "confidence": 0.6373,
-      "revenue_trend": "Modest growth (+9.9% YoY) \u2014 gradual improvement"
+      "rating": "Buy",
+      "target": 2069.03,
+      "upside": 14.84,
+      "confidence": 0.3938,
+      "revenue_trend": "Modest growth (+5.7% YoY) \u2014 gradual improvement"
     },
     "DRREDDY.NS": {
       "rating": "Buy",
-      "target": 1478.76,
-      "upside": 14.43,
-      "confidence": 0.3771,
-      "revenue_trend": "Modest growth (+5.3% YoY) \u2014 gradual improvement"
+      "target": 1526.67,
+      "upside": 18.14,
+      "confidence": 0.5254,
+      "revenue_trend": "Flat revenues (+2.8% YoY) \u2014 limited top-line momentum"
     },
     "HINDUNILVR.NS": {
-      "rating": "Hold",
-      "target": 2266.59,
-      "upside": 4.93,
-      "confidence": 0.0026,
-      "revenue_trend": "Modest growth (+6.7% YoY) \u2014 gradual improvement"
+      "rating": "Sell",
+      "target": 2197.28,
+      "upside": 1.73,
+      "confidence": 0.131,
+      "revenue_trend": "Modest growth (+5.9% YoY) \u2014 gradual improvement"
     },
     "ITC.NS": {
-      "rating": "Sell",
-      "target": 305.79,
-      "upside": 1.44,
-      "confidence": 0.1424,
-      "revenue_trend": "Modest growth (+3.7% YoY) \u2014 gradual improvement"
+      "rating": "Hold",
+      "target": 314.77,
+      "upside": 4.42,
+      "confidence": 0.0232,
+      "revenue_trend": "Modest growth (+6.6% YoY) \u2014 gradual improvement"
     },
     "NTPC.NS": {
       "rating": "Buy",
-      "target": 447.12,
-      "upside": 16.3,
-      "confidence": 0.4521,
-      "revenue_trend": "Modest growth (+3.7% YoY) \u2014 gradual improvement"
+      "target": 449.84,
+      "upside": 17.01,
+      "confidence": 0.4804,
+      "revenue_trend": "Modest growth (+4.4% YoY) \u2014 gradual improvement"
     },
     "POWERGRID.NS": {
       "rating": "Buy",
-      "target": 353.86,
-      "upside": 17.58,
-      "confidence": 0.5032,
-      "revenue_trend": "Modest growth (+3.7% YoY) \u2014 gradual improvement"
+      "target": 345.87,
+      "upside": 14.93,
+      "confidence": 0.397,
+      "revenue_trend": "Flat revenues (+2.8% YoY) \u2014 limited top-line momentum"
     },
     "ULTRACEMCO.NS": {
       "rating": "Hold",
-      "target": 10949.29,
-      "upside": 3.14,
-      "confidence": 0.0744,
-      "revenue_trend": "Modest growth (+9.0% YoY) \u2014 gradual improvement"
+      "target": 11388.37,
+      "upside": 7.28,
+      "confidence": 0.091,
+      "revenue_trend": "Modest growth (+7.5% YoY) \u2014 gradual improvement"
     },
     "GRASIM.NS": {
       "rating": "Hold",
-      "target": 2722.45,
-      "upside": 5.99,
-      "confidence": 0.0396,
-      "revenue_trend": "Modest growth (+5.4% YoY) \u2014 gradual improvement"
+      "target": 2745.1,
+      "upside": 6.87,
+      "confidence": 0.0749,
+      "revenue_trend": "Flat revenues (+2.8% YoY) \u2014 limited top-line momentum"
     }
   },
   "rebalancing": [
     {
       "ticker": "DRREDDY.NS",
       "current_weight": 0.02,
-      "target_weight": 0.3196,
-      "delta": 0.2996,
+      "target_weight": 0.1,
+      "delta": 0.08,
       "action": "BUY",
       "conviction": "Medium"
     },
     {
       "ticker": "GRASIM.NS",
       "current_weight": 0.02,
-      "target_weight": 0.1303,
-      "delta": 0.1103,
+      "target_weight": 0.0987,
+      "delta": 0.0787,
       "action": "BUY",
       "conviction": "Low"
-    },
-    {
-      "ticker": "NTPC.NS",
-      "current_weight": 0.03,
-      "target_weight": 0.1154,
-      "delta": 0.0854,
-      "action": "BUY",
-      "conviction": "High"
-    },
-    {
-      "ticker": "POWERGRID.NS",
-      "current_weight": 0.03,
-      "target_weight": 0.1154,
-      "delta": 0.0854,
-      "action": "BUY",
-      "conviction": "High"
     },
     {
       "ticker": "SUNPHARMA.NS",
       "current_weight": 0.03,
-      "target_weight": 0.0842,
-      "delta": 0.0543,
+      "target_weight": 0.1,
+      "delta": 0.07,
       "action": "BUY",
-      "conviction": "High"
+      "conviction": "Medium"
     },
     {
-      "ticker": "HINDUNILVR.NS",
-      "current_weight": 0.04,
-      "target_weight": 0.0897,
-      "delta": 0.0497,
+      "ticker": "NTPC.NS",
+      "current_weight": 0.03,
+      "target_weight": 0.1,
+      "delta": 0.07,
       "action": "BUY",
-      "conviction": "Low"
+      "conviction": "Medium"
     },
     {
       "ticker": "RELIANCE.NS",
       "current_weight": 0.1,
-      "target_weight": 0.1154,
-      "delta": 0.0154,
+      "target_weight": 0.0304,
+      "delta": -0.0696,
+      "action": "SELL",
+      "conviction": "Low"
+    },
+    {
+      "ticker": "MARUTI.NS",
+      "current_weight": 0.03,
+      "target_weight": 0.093,
+      "delta": 0.063,
       "action": "BUY",
-      "conviction": "Medium"
+      "conviction": "Low"
+    },
+    {
+      "ticker": "BAJFINANCE.NS",
+      "current_weight": 0.04,
+      "target_weight": 0.0816,
+      "delta": 0.0416,
+      "action": "BUY",
+      "conviction": "Low"
+    },
+    {
+      "ticker": "POWERGRID.NS",
+      "current_weight": 0.03,
+      "target_weight": 0.0716,
+      "delta": 0.0416,
+      "action": "BUY",
+      "conviction": "Low"
+    },
+    {
+      "ticker": "ULTRACEMCO.NS",
+      "current_weight": 0.02,
+      "target_weight": 0.0573,
+      "delta": 0.0373,
+      "action": "BUY",
+      "conviction": "Low"
+    },
+    {
+      "ticker": "ADANIPORTS.NS",
+      "current_weight": 0.03,
+      "target_weight": 0.0612,
+      "delta": 0.0312,
+      "action": "BUY",
+      "conviction": "Low"
     }
   ],
-  "report_id": "RPT-D6DEAEA3",
+  "report_id": "RPT-E3947E88",
   "recommended_actions": [
     "[RISK] Consider tail-risk hedges (put spreads, VIX calls, or defensive allocations)",
-    "[MACRO] Increase Energy allocation per Peak regime guidance",
-    "[MACRO] Increase Materials allocation per Peak regime guidance",
-    "[SIGNAL] High-conviction buy ideas: SUNPHARMA.NS (+18.4% expected return), NTPC.NS (+14.2% expected return), POWERGRID.NS (+14.7% expected return)"
+    "[MACRO] Increase Technology allocation per Expansion regime guidance",
+    "[MACRO] Increase Consumer Discretionary allocation per Expansion regime guidance",
+    "[MACRO] Increase Industrials allocation per Expansion regime guidance",
+    "[SCENARIO] Tail risk: '2008 Global Financial Crisis Replay' could cause -35.9% drawdown \u2014 evaluate protective hedges"
   ]
 }
