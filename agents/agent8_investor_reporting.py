@@ -12,6 +12,8 @@ from typing import Dict, List, Optional
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+import yfinance as yf
+
 from models.data_models import (
     InvestorReport, Portfolio, UnifiedDataset,
     MacroRegimeReport, RiskReport, ResearchSummary,
@@ -38,12 +40,21 @@ class InvestorReportingAgent:
     AGENT_NAME = "Investor Reporting Agent"
     VERSION    = "1.0.0"
 
-    BENCHMARK_RETURN = 0.0337    # Nifty 50 YTD proxy (updated to current value)
-
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or {}
         self.latest_report: Optional[InvestorReport] = None
-        logger.info(f"[{self.AGENT_NAME}] Initialized (v{self.VERSION})")
+        # Fetch Nifty 50 YTD return as benchmark
+        try:
+            data = yf.download('^NSEI', period='1y', interval='1d')
+            if not data.empty:
+                start_price = data['Close'].iloc[0]
+                end_price = data['Close'].iloc[-1]
+                self.benchmark_return = (end_price - start_price) / start_price
+            else:
+                self.benchmark_return = 0.0337  # fallback
+        except:
+            self.benchmark_return = 0.0337  # fallback
+        logger.info(f"[{self.AGENT_NAME}] Initialized (v{self.VERSION}) - Benchmark: {self.benchmark_return:.4f}")
 
     # ─── Public API ─────────────────────────────────────────────────────────
 
@@ -65,7 +76,7 @@ class InvestorReportingAgent:
         logger.info(f"[{self.AGENT_NAME}] Generating {reporting_period} investor report …")
 
         portfolio_return = self._compute_portfolio_return(portfolio, dataset)
-        alpha = portfolio_return - self.BENCHMARK_RETURN
+        alpha = portfolio_return - self.benchmark_return
 
         overview         = self._write_portfolio_overview(portfolio, dataset, portfolio_return)
         perf_attribution = self._write_performance_attribution(portfolio, dataset, research)
@@ -85,7 +96,7 @@ class InvestorReportingAgent:
             portfolio_name=portfolio.portfolio_name,
             portfolio_manager=portfolio.portfolio_manager,
             portfolio_return=round(portfolio_return, 4),
-            benchmark_return=round(self.BENCHMARK_RETURN, 4),
+            benchmark_return=round(self.benchmark_return, 4),
             alpha=round(alpha, 4),
             portfolio_overview=overview,
             performance_attribution=perf_attribution,
@@ -215,7 +226,7 @@ class InvestorReportingAgent:
     def _write_portfolio_overview(
         self, portfolio: Portfolio, dataset: UnifiedDataset, port_return: float
     ) -> str:
-        alpha = port_return - self.BENCHMARK_RETURN
+        alpha = port_return - self.benchmark_return
         snap  = dataset.macro_snapshot
         total_mv = sum(h.market_value for h in portfolio.holdings)
         n_pos    = len(portfolio.holdings)
@@ -224,7 +235,7 @@ class InvestorReportingAgent:
             f"Positions: {n_pos}  |  Cash: {portfolio.cash_weight*100:.1f}%  |  "
             f"Benchmark: {portfolio.benchmark}\n\n"
             f"YTD Portfolio Return:  {port_return*100:+.2f}%\n"
-            f"YTD Benchmark Return:  {self.BENCHMARK_RETURN*100:+.2f}%\n"
+            f"YTD Benchmark Return:  {self.benchmark_return*100:+.2f}%\n"
             f"Alpha (Active Return): {alpha*100:+.2f}%\n\n"
             f"The portfolio {'outperformed' if alpha > 0 else 'underperformed'} its benchmark "
             f"by {abs(alpha)*100:.2f}% on a year-to-date basis. "
