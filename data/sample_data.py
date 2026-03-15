@@ -11,6 +11,8 @@ from typing import Dict, List
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+import yfinance as yf
+
 from models.data_models import (
     PriceData, FinancialMetrics, EarningsTranscript, NewsItem,
     MacroSnapshot, MacroIndicator, Holding, Portfolio, UnifiedDataset,
@@ -23,33 +25,35 @@ random.seed(42)
 
 STOCK_UNIVERSE = {
     # Technology
-    "AAPL":  {"name": "Apple Inc.",                  "sector": Sector.TECHNOLOGY,       "beta": 1.15, "mcap": 2800},
-    "MSFT":  {"name": "Microsoft Corporation",       "sector": Sector.TECHNOLOGY,       "beta": 0.95, "mcap": 2600},
-    "NVDA":  {"name": "NVIDIA Corporation",          "sector": Sector.TECHNOLOGY,       "beta": 1.85, "mcap": 1800},
-    "GOOGL": {"name": "Alphabet Inc.",               "sector": Sector.COMMUNICATION,    "beta": 1.05, "mcap": 1700},
-    "META":  {"name": "Meta Platforms Inc.",         "sector": Sector.COMMUNICATION,    "beta": 1.25, "mcap": 1100},
-    # Healthcare
-    "JNJ":   {"name": "Johnson & Johnson",           "sector": Sector.HEALTHCARE,       "beta": 0.55, "mcap": 410},
-    "UNH":   {"name": "UnitedHealth Group",          "sector": Sector.HEALTHCARE,       "beta": 0.65, "mcap": 490},
-    "LLY":   {"name": "Eli Lilly & Co.",             "sector": Sector.HEALTHCARE,       "beta": 0.45, "mcap": 720},
+    "TCS.NS":      {"name": "Tata Consultancy Services",    "sector": Sector.TECHNOLOGY,       "beta": 0.85, "mcap": 1500},
+    "INFY.NS":     {"name": "Infosys Limited",              "sector": Sector.TECHNOLOGY,       "beta": 0.90, "mcap": 700},
+    "WIPRO.NS":    {"name": "Wipro Limited",                "sector": Sector.TECHNOLOGY,       "beta": 0.95, "mcap": 250},
     # Financials
-    "JPM":   {"name": "JPMorgan Chase",              "sector": Sector.FINANCIALS,       "beta": 1.10, "mcap": 540},
-    "BAC":   {"name": "Bank of America",             "sector": Sector.FINANCIALS,       "beta": 1.35, "mcap": 290},
-    "GS":    {"name": "Goldman Sachs",               "sector": Sector.FINANCIALS,       "beta": 1.45, "mcap": 140},
-    # Energy
-    "XOM":   {"name": "ExxonMobil Corporation",      "sector": Sector.ENERGY,           "beta": 0.85, "mcap": 450},
-    "CVX":   {"name": "Chevron Corporation",         "sector": Sector.ENERGY,           "beta": 0.80, "mcap": 290},
+    "HDFCBANK.NS": {"name": "HDFC Bank",                    "sector": Sector.FINANCIALS,       "beta": 1.05, "mcap": 1200},
+    "ICICIBANK.NS":{"name": "ICICI Bank",                   "sector": Sector.FINANCIALS,       "beta": 1.20, "mcap": 800},
+    "KOTAKBANK.NS":{"name": "Kotak Mahindra Bank",          "sector": Sector.FINANCIALS,       "beta": 1.10, "mcap": 500},
+    "BAJFINANCE.NS":{"name": "Bajaj Finance",               "sector": Sector.FINANCIALS,       "beta": 1.30, "mcap": 450},
+    # Energy/Consumer
+    "RELIANCE.NS": {"name": "Reliance Industries",          "sector": Sector.ENERGY,           "beta": 1.15, "mcap": 2000},
     # Consumer Discretionary
-    "AMZN":  {"name": "Amazon.com Inc.",             "sector": Sector.CONSUMER_DISC,    "beta": 1.20, "mcap": 1900},
-    "TSLA":  {"name": "Tesla Inc.",                  "sector": Sector.CONSUMER_DISC,    "beta": 1.95, "mcap": 800},
+    "MARUTI.NS":   {"name": "Maruti Suzuki India",          "sector": Sector.CONSUMER_DISC,    "beta": 0.80, "mcap": 400},
+    # Communication
+    "BHARTIARTL.NS":{"name": "Bharti Airtel",              "sector": Sector.COMMUNICATION,    "beta": 1.00, "mcap": 900},
     # Industrials
-    "CAT":   {"name": "Caterpillar Inc.",            "sector": Sector.INDUSTRIALS,      "beta": 1.05, "mcap": 175},
-    "HON":   {"name": "Honeywell International",     "sector": Sector.INDUSTRIALS,      "beta": 0.90, "mcap": 145},
+    "LT.NS":       {"name": "Larsen & Toubro",             "sector": Sector.INDUSTRIALS,      "beta": 1.05, "mcap": 500},
+    "ADANIPORTS.NS":{"name": "Adani Ports and Special",    "sector": Sector.INDUSTRIALS,      "beta": 1.25, "mcap": 300},
+    # Healthcare
+    "SUNPHARMA.NS":{"name": "Sun Pharmaceutical",           "sector": Sector.HEALTHCARE,       "beta": 0.75, "mcap": 400},
+    "DRREDDY.NS":  {"name": "Dr. Reddy's Laboratories",    "sector": Sector.HEALTHCARE,       "beta": 0.85, "mcap": 130},
     # Consumer Staples
-    "PG":    {"name": "Procter & Gamble",            "sector": Sector.CONSUMER_STAPLES, "beta": 0.55, "mcap": 365},
-    "KO":    {"name": "Coca-Cola Company",           "sector": Sector.CONSUMER_STAPLES, "beta": 0.60, "mcap": 260},
+    "HINDUNILVR.NS":{"name": "Hindustan Unilever",        "sector": Sector.CONSUMER_STAPLES, "beta": 0.60, "mcap": 600},
+    "ITC.NS":      {"name": "ITC Limited",                 "sector": Sector.CONSUMER_STAPLES, "beta": 0.70, "mcap": 550},
+    # Utilities
+    "NTPC.NS":     {"name": "NTPC Limited",                "sector": Sector.UTILITIES,        "beta": 0.80, "mcap": 400},
+    "POWERGRID.NS":{"name": "Power Grid Corporation",      "sector": Sector.UTILITIES,        "beta": 0.75, "mcap": 300},
     # Materials
-    "LIN":   {"name": "Linde PLC",                   "sector": Sector.MATERIALS,        "beta": 0.85, "mcap": 220},
+    "ULTRACEMCO.NS":{"name": "UltraTech Cement",           "sector": Sector.MATERIALS,        "beta": 0.90, "mcap": 300},
+    "GRASIM.NS":   {"name": "Grasim Industries",           "sector": Sector.MATERIALS,        "beta": 1.00, "mcap": 180},
 }
 
 def _rand_pct(base: float, variance: float) -> float:
@@ -63,61 +67,110 @@ def _rand_val(base: float, variance_pct: float = 0.1) -> float:
 
 # ─── Price Data ──────────────────────────────────────────────────────────────
 
-BASE_PRICES = {
-    "AAPL": 195, "MSFT": 415, "NVDA": 875, "GOOGL": 170, "META": 510,
-    "JNJ": 158, "UNH": 555, "LLY": 810, "JPM": 215, "BAC": 42,
-    "GS": 490, "XOM": 112, "CVX": 158, "AMZN": 185, "TSLA": 250,
-    "CAT": 365, "HON": 215, "PG": 168, "KO": 63, "LIN": 455,
-}
-
 def generate_price_data(as_of: datetime = None) -> Dict[str, PriceData]:
     if as_of is None:
         as_of = datetime.now()
     data = {}
-    for ticker, base in BASE_PRICES.items():
-        close = _rand_val(base, 0.05)
-        data[ticker] = PriceData(
-            ticker=ticker,
-            date=as_of,
-            open=_rand_val(base, 0.04),
-            high=close * random.uniform(1.005, 1.025),
-            low=close * random.uniform(0.975, 0.995),
-            close=close,
-            volume=int(random.uniform(5_000_000, 80_000_000)),
-            adjusted_close=close,
-            returns_1d=_rand_pct(0.0, 0.015),
-            returns_1w=_rand_pct(0.008, 0.03),
-            returns_1m=_rand_pct(0.025, 0.06),
-            returns_3m=_rand_pct(0.06, 0.12),
-            returns_ytd=_rand_pct(0.08, 0.15),
-            volatility_30d=random.uniform(0.18, 0.45),
-        )
+    tickers = list(STOCK_UNIVERSE.keys())
+    try:
+        # Fetch data for all tickers
+        hist = yf.download(tickers, period="2mo", interval="1d", group_by='ticker', threads=False)
+        for ticker in tickers:
+            if ticker in hist and not hist[ticker].empty:
+                df = hist[ticker].dropna()
+                if not df.empty:
+                    latest = df.iloc[-1]
+                    prev_day = df.iloc[-2] if len(df) > 1 else latest
+                    close = latest['Close']
+                    open_ = latest['Open']
+                    high = latest['High']
+                    low = latest['Low']
+                    volume = latest['Volume']
+                    returns_1d = (close - prev_day['Close']) / prev_day['Close'] if len(df) > 1 else 0.0
+                    # Approximate other returns
+                    if len(df) > 5:
+                        returns_1w = (close - df.iloc[-6]['Close']) / df.iloc[-6]['Close']
+                    else:
+                        returns_1w = returns_1d * 5
+                    if len(df) > 20:
+                        returns_1m = (close - df.iloc[-21]['Close']) / df.iloc[-21]['Close']
+                    else:
+                        returns_1m = returns_1d * 20
+                    returns_3m = returns_1m * 3  # approximate
+                    returns_ytd = returns_1m * 12  # approximate
+                    volatility_30d = df['Close'].pct_change().std() * math.sqrt(252) if len(df) > 1 else 0.2
+                    data[ticker] = PriceData(
+                        ticker=ticker,
+                        date=as_of,
+                        open=open_,
+                        high=high,
+                        low=low,
+                        close=close,
+                        volume=int(volume),
+                        adjusted_close=close,
+                        returns_1d=round(returns_1d, 4),
+                        returns_1w=round(returns_1w, 4),
+                        returns_1m=round(returns_1m, 4),
+                        returns_3m=round(returns_3m, 4),
+                        returns_ytd=round(returns_ytd, 4),
+                        volatility_30d=round(volatility_30d, 4),
+                    )
+                else:
+                    # Fallback to synthetic
+                    data[ticker] = _generate_synthetic_price(ticker, as_of)
+            else:
+                # Fallback
+                data[ticker] = _generate_synthetic_price(ticker, as_of)
+    except Exception as e:
+        print(f"Error fetching data from Yahoo Finance: {e}. Using synthetic data.")
+        for ticker in tickers:
+            data[ticker] = _generate_synthetic_price(ticker, as_of)
     return data
+
+def _generate_synthetic_price(ticker: str, as_of: datetime) -> PriceData:
+    base = 1000  # dummy base price
+    close = _rand_val(base, 0.05)
+    return PriceData(
+        ticker=ticker,
+        date=as_of,
+        open=_rand_val(base, 0.04),
+        high=close * random.uniform(1.005, 1.025),
+        low=close * random.uniform(0.975, 0.995),
+        close=close,
+        volume=int(random.uniform(1_000_000, 10_000_000)),
+        adjusted_close=close,
+        returns_1d=_rand_pct(0.0, 0.015),
+        returns_1w=_rand_pct(0.008, 0.03),
+        returns_1m=_rand_pct(0.025, 0.06),
+        returns_3m=_rand_pct(0.06, 0.12),
+        returns_ytd=_rand_pct(0.08, 0.15),
+        volatility_30d=random.uniform(0.18, 0.45),
+    )
 
 
 # ─── Financial Metrics ───────────────────────────────────────────────────────
 
 FINANCIAL_TEMPLATES = {
-    "AAPL":  dict(rev=383, rev_g=0.06, gm=0.445, ebitdam=0.33, pe=29, eveb=22, pb=45),
-    "MSFT":  dict(rev=245, rev_g=0.16, gm=0.695, ebitdam=0.50, pe=34, eveb=26, pb=12),
-    "NVDA":  dict(rev=80,  rev_g=1.22, gm=0.740, ebitdam=0.56, pe=58, eveb=42, pb=38),
-    "GOOGL": dict(rev=307, rev_g=0.09, gm=0.560, ebitdam=0.28, pe=23, eveb=16, pb=6),
-    "META":  dict(rev=135, rev_g=0.22, gm=0.810, ebitdam=0.42, pe=25, eveb=18, pb=8),
-    "JNJ":   dict(rev=97,  rev_g=0.04, gm=0.685, ebitdam=0.30, pe=14, eveb=12, pb=4),
-    "UNH":   dict(rev=372, rev_g=0.12, gm=0.235, ebitdam=0.09, pe=20, eveb=13, pb=5),
-    "LLY":   dict(rev=34,  rev_g=0.28, gm=0.790, ebitdam=0.38, pe=55, eveb=45, pb=58),
-    "JPM":   dict(rev=162, rev_g=0.10, gm=0.520, ebitdam=0.38, pe=12, eveb=9,  pb=2),
-    "BAC":   dict(rev=98,  rev_g=0.06, gm=0.480, ebitdam=0.32, pe=11, eveb=8,  pb=1),
-    "GS":    dict(rev=46,  rev_g=0.08, gm=0.620, ebitdam=0.29, pe=13, eveb=10, pb=1),
-    "XOM":   dict(rev=398, rev_g=-0.04, gm=0.210, ebitdam=0.14, pe=13, eveb=8, pb=2),
-    "CVX":   dict(rev=201, rev_g=-0.06, gm=0.185, ebitdam=0.13, pe=14, eveb=9, pb=2),
-    "AMZN":  dict(rev=575, rev_g=0.12, gm=0.480, ebitdam=0.16, pe=42, eveb=24, pb=8),
-    "TSLA":  dict(rev=97,  rev_g=0.02, gm=0.175, ebitdam=0.11, pe=65, eveb=48, pb=12),
-    "CAT":   dict(rev=64,  rev_g=0.03, gm=0.385, ebitdam=0.18, pe=16, eveb=10, pb=5),
-    "HON":   dict(rev=36,  rev_g=0.05, gm=0.355, ebitdam=0.21, pe=20, eveb=14, pb=7),
-    "PG":    dict(rev=84,  rev_g=0.04, gm=0.530, ebitdam=0.25, pe=24, eveb=18, pb=7),
-    "KO":    dict(rev=46,  rev_g=0.03, gm=0.600, ebitdam=0.31, pe=21, eveb=17, pb=10),
-    "LIN":   dict(rev=33,  rev_g=0.07, gm=0.545, ebitdam=0.40, pe=28, eveb=20, pb=4),
+    "TCS.NS":       dict(rev=25,  rev_g=0.08, gm=0.35, ebitdam=0.25, pe=25, eveb=18, pb=8),
+    "INFY.NS":      dict(rev=18,  rev_g=0.06, gm=0.32, ebitdam=0.28, pe=22, eveb=16, pb=7),
+    "WIPRO.NS":     dict(rev=11,  rev_g=0.05, gm=0.30, ebitdam=0.22, pe=20, eveb=14, pb=4),
+    "HDFCBANK.NS":  dict(rev=20,  rev_g=0.10, gm=0.50, ebitdam=0.35, pe=18, eveb=12, pb=3),
+    "ICICIBANK.NS": dict(rev=15,  rev_g=0.12, gm=0.45, ebitdam=0.30, pe=16, eveb=10, pb=2),
+    "KOTAKBANK.NS": dict(rev=8,   rev_g=0.15, gm=0.55, ebitdam=0.40, pe=28, eveb=20, pb=4),
+    "BAJFINANCE.NS":dict(rev=5,   rev_g=0.20, gm=0.60, ebitdam=0.45, pe=35, eveb=25, pb=6),
+    "RELIANCE.NS":  dict(rev=100, rev_g=0.10, gm=0.25, ebitdam=0.15, pe=22, eveb=15, pb=2),
+    "MARUTI.NS":    dict(rev=15,  rev_g=0.05, gm=0.20, ebitdam=0.12, pe=24, eveb=18, pb=4),
+    "BHARTIARTL.NS":dict(rev=18,  rev_g=0.08, gm=0.40, ebitdam=0.30, pe=65, eveb=50, pb=8),
+    "LT.NS":        dict(rev=22,  rev_g=0.06, gm=0.15, ebitdam=0.10, pe=30, eveb=20, pb=3),
+    "ADANIPORTS.NS":dict(rev=6,   rev_g=0.12, gm=0.35, ebitdam=0.25, pe=40, eveb=30, pb=5),
+    "SUNPHARMA.NS": dict(rev=6,   rev_g=0.07, gm=0.25, ebitdam=0.20, pe=35, eveb=25, pb=3),
+    "DRREDDY.NS":   dict(rev=3,   rev_g=0.05, gm=0.30, ebitdam=0.25, pe=18, eveb=12, pb=3),
+    "HINDUNILVR.NS":dict(rev=7,   rev_g=0.04, gm=0.50, ebitdam=0.35, pe=50, eveb=40, pb=12),
+    "ITC.NS":       dict(rev=8,   rev_g=0.06, gm=0.35, ebitdam=0.25, pe=25, eveb=18, pb=6),
+    "NTPC.NS":      dict(rev=18,  rev_g=0.03, gm=0.20, ebitdam=0.15, pe=18, eveb=12, pb=2),
+    "POWERGRID.NS": dict(rev=5,   rev_g=0.04, gm=0.25, ebitdam=0.20, pe=20, eveb=15, pb=3),
+    "ULTRACEMCO.NS":dict(rev=7,   rev_g=0.08, gm=0.20, ebitdam=0.15, pe=30, eveb=20, pb=4),
+    "GRASIM.NS":    dict(rev=15,  rev_g=0.05, gm=0.25, ebitdam=0.18, pe=25, eveb=18, pb=2),
 }
 
 def generate_financial_metrics(price_data: Dict[str, PriceData]) -> Dict[str, FinancialMetrics]:
@@ -320,10 +373,10 @@ def generate_news_feed() -> List[NewsItem]:
 # ─── Portfolio ───────────────────────────────────────────────────────────────
 
 PORTFOLIO_WEIGHTS = {
-    "AAPL": 0.085, "MSFT": 0.080, "NVDA": 0.070, "GOOGL": 0.065, "META": 0.050,
-    "JNJ":  0.045, "UNH":  0.040, "LLY":  0.055, "JPM":   0.055, "BAC":  0.025,
-    "GS":   0.020, "XOM":  0.035, "CVX":  0.025, "AMZN":  0.075, "TSLA": 0.030,
-    "CAT":  0.025, "HON":  0.020, "PG":   0.030, "KO":    0.020, "LIN":  0.025,
+    "RELIANCE.NS": 0.10, "TCS.NS": 0.08, "HDFCBANK.NS": 0.07, "INFY.NS": 0.06, "ICICIBANK.NS": 0.05,
+    "BHARTIARTL.NS": 0.05, "ITC.NS": 0.04, "HINDUNILVR.NS": 0.04, "KOTAKBANK.NS": 0.04, "BAJFINANCE.NS": 0.04,
+    "MARUTI.NS": 0.03, "LT.NS": 0.03, "SUNPHARMA.NS": 0.03, "NTPC.NS": 0.03, "POWERGRID.NS": 0.03,
+    "WIPRO.NS": 0.03, "ADANIPORTS.NS": 0.03, "DRREDDY.NS": 0.02, "ULTRACEMCO.NS": 0.02, "GRASIM.NS": 0.02,
 }
 
 def generate_portfolio(price_data: Dict[str, PriceData], nav: float = 500_000_000) -> Portfolio:
