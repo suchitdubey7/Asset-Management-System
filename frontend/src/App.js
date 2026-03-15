@@ -3,15 +3,21 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart
 import './App.css';
 
 function App() {
-  const [data, setData] = useState(null);
+  const [report, setReport] = useState(null);
+  const [portfolio, setPortfolio] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
-    fetch('/reports/amis_results.json')
-      .then(response => response.json())
-      .then(json => {
-        setData(json);
+    const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:8001';
+
+    Promise.all([
+      fetch(`${apiBase}/report`).then(response => response.json()),
+      fetch(`${apiBase}/portfolio`).then(response => response.json()),
+    ])
+      .then(([reportJson, portfolioJson]) => {
+        setReport(reportJson);
+        setPortfolio(portfolioJson);
         setLoading(false);
       })
       .catch(error => {
@@ -24,15 +30,15 @@ function App() {
     return <div className="flex items-center justify-center h-screen bg-gray-900 text-white">Loading...</div>;
   }
 
-  if (!data) {
+  if (!report || !portfolio) {
     return <div className="flex items-center justify-center h-screen bg-gray-900 text-white">No data available</div>;
   }
 
-  const portfolio = data.portfolio;
-  const performance = data.performance;
-  const risk = data.risk;
-  const alerts = data.alerts || [];
-  const macroRiskFactors = data.macro_risk_factors || [];
+  const performance = report.performance;
+  const risk = report.risk;
+  const alerts = report.alerts || [];
+  const macroRiskFactors = report.macro_risk_factors || [];
+  const holdingData = portfolio.holdings || [];
 
   // Mock performance data for chart (replace with real if available)
   const chartData = [
@@ -41,7 +47,11 @@ function App() {
     { name: 'Mar', value: 110 },
   ];
 
-  const sectorData = Object.entries(risk.sector_exposures).map(([sector, exposure]) => ({
+  const sectorExposureMap = {};
+  holdingData.forEach(h => {
+    sectorExposureMap[h.sector] = (sectorExposureMap[h.sector] || 0) + (h.weight || 0);
+  });
+  const sectorData = Object.entries(sectorExposureMap).map(([sector, exposure]) => ({
     name: sector,
     value: exposure * 100,
   }));
@@ -53,7 +63,7 @@ function App() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-800 p-4 rounded">
           <h3 className="text-lg">Portfolio NAV</h3>
-          <p className="text-2xl">₹{(portfolio.nav / 1e6).toFixed(0)}M</p>
+          <p className="text-2xl">₹{(portfolio.nav / 1e7).toFixed(0)} crores</p>
         </div>
         <div className="bg-gray-800 p-4 rounded">
           <h3 className="text-lg">YTD Return</h3>
@@ -121,12 +131,12 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {portfolio.holdings.map((holding, index) => (
+            {holdingData.map((holding, index) => (
               <tr key={index} className="border-t border-gray-700">
-                <td className="py-2">{holding.symbol}</td>
-                <td className="py-2">{holding.shares}</td>
+                <td className="py-2">{holding.ticker}</td>
+                <td className="py-2">{holding.quantity ?? holding.shares}</td>
                 <td className="py-2">{holding.price.toFixed(2)}</td>
-                <td className="py-2">{(holding.shares * holding.price).toFixed(2)}</td>
+                <td className="py-2">{holding.market_value.toFixed(2)}</td>
                 <td className="py-2">{(holding.weight * 100).toFixed(2)}%</td>
               </tr>
             ))}
