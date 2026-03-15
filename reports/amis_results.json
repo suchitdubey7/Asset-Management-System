@@ -1,6 +1,6 @@
 {
-  "run_id": "RUN-20260315-150115",
-  "timestamp": "2026-03-15T15:01:41.727331",
+  "run_id": "RUN-20260315-153011",
+  "timestamp": "2026-03-15T15:30:58.368917",
   "portfolio": {
     "name": "AMIS Alpha Equity Fund",
     "nav": 500000000,
@@ -10,7 +10,7 @@
   "performance": {
     "ytd_return": -0.9212,
     "benchmark": 0.0337,
-    "alpha": -0.9549
+    "alpha": -0.9548
   },
   "risk": {
     "level": "Moderate",
@@ -507,7 +507,7 @@
       "conviction": "Low"
     }
   ],
-  "report_id": "RPT-5DC0F915",
+  "report_id": "RPT-C05708BA",
   "recommended_actions": [
     "[RISK] Consider tail-risk hedges (put spreads, VIX calls, or defensive allocations)",
     "[MACRO] Increase Technology allocation per Expansion regime guidance",

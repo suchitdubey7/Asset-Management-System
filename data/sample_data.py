@@ -18,6 +18,10 @@ from models.data_models import (
     MacroSnapshot, MacroIndicator, Holding, Portfolio, UnifiedDataset,
     Sector, Sentiment
 )
+from models.database import DBPortfolio, DBHolding, engine
+from sqlalchemy.orm import sessionmaker
+
+Session = sessionmaker(bind=engine)
 
 random.seed(42)
 
@@ -447,4 +451,56 @@ def generate_unified_dataset() -> UnifiedDataset:
 def generate_sample_portfolio(price_data: Dict[str, PriceData] = None) -> Portfolio:
     if price_data is None:
         price_data = generate_price_data()
-    return generate_portfolio(price_data)
+    portfolio = generate_portfolio(price_data)
+    save_portfolio_to_db(portfolio)
+    return portfolio
+
+def save_portfolio_to_db(portfolio: Portfolio):
+    """Save portfolio and holdings to database."""
+    session = Session()
+    try:
+        # Check if portfolio exists
+        existing = session.query(DBPortfolio).filter_by(id=portfolio.portfolio_id).first()
+        if existing:
+            # Update existing
+            existing.nav = portfolio.total_nav
+            existing.cash_weight = portfolio.cash_weight
+            existing.updated_at = datetime.utcnow()
+            # Delete old holdings
+            session.query(DBHolding).filter_by(portfolio_id=portfolio.portfolio_id).delete()
+        else:
+            # Create new
+            db_portfolio = DBPortfolio(
+                id=portfolio.portfolio_id,
+                name=portfolio.portfolio_name,
+                manager=portfolio.portfolio_manager,
+                nav=portfolio.total_nav,
+                cash_weight=portfolio.cash_weight,
+                benchmark=portfolio.benchmark
+            )
+            session.add(db_portfolio)
+
+        # Add holdings
+        for holding in portfolio.holdings:
+            db_holding = DBHolding(
+                portfolio_id=portfolio.portfolio_id,
+                ticker=holding.ticker,
+                name=holding.company_name,
+                sector=holding.sector.value,
+                weight=holding.weight,
+                quantity=holding.shares,
+                price=holding.current_price,
+                market_value=holding.market_value,
+                cost_basis=holding.cost_basis,
+                unrealized_pnl=holding.unrealized_pnl,
+                beta=holding.beta,
+                liquidity_score=holding.liquidity_score
+            )
+            session.add(db_holding)
+
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print(f"Error saving to DB: {e}")
+    finally:
+        session.close()
