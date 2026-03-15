@@ -49,7 +49,7 @@ class InvestorReportingAgent:
             if not data.empty:
                 start_price = data['Close'].iloc[0]
                 end_price = data['Close'].iloc[-1]
-                self.benchmark_return = (end_price - start_price) / start_price
+                self.benchmark_return = float((end_price - start_price) / start_price)
             else:
                 self.benchmark_return = 0.0337  # fallback
         except:
