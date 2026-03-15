@@ -277,27 +277,27 @@ def generate_earnings_transcripts(metrics: Dict[str, FinancialMetrics]) -> Dict[
 def generate_macro_snapshot() -> MacroSnapshot:
     return MacroSnapshot(
         timestamp=datetime.now(),
-        cpi_yoy=_rand_pct(3.2, 0.3),
-        pce_yoy=_rand_pct(2.8, 0.3),
-        fed_funds_rate=_rand_pct(5.25, 0.25),
-        us_10y_yield=_rand_pct(4.45, 0.25),
-        us_2y_yield=_rand_pct(4.85, 0.20),
-        yield_curve_spread=_rand_pct(-0.40, 0.15),
-        gdp_growth_qoq=_rand_pct(0.0075, 0.003),
-        gdp_growth_yoy=_rand_pct(0.028, 0.005),
-        unemployment_rate=_rand_pct(0.038, 0.003),
-        oil_price_wti=_rand_val(78.0, 0.08),
-        gold_price=_rand_val(2050.0, 0.05),
-        copper_price=_rand_val(3.85, 0.06),
-        hy_spread=_rand_pct(350, 40),
-        ig_spread=_rand_pct(110, 15),
-        dxy_index=_rand_val(104.5, 0.03),
+        cpi_yoy=_rand_pct(5.1, 0.3),  # Indian CPI
+        pce_yoy=_rand_pct(1.2, 0.3),  # WPI
+        fed_funds_rate=_rand_pct(6.50, 0.25),  # RBI Repo Rate
+        us_10y_yield=_rand_pct(7.15, 0.25),  # 10Y G-Sec
+        us_2y_yield=_rand_pct(7.35, 0.20),  # 2Y G-Sec approx
+        yield_curve_spread=_rand_pct(-0.20, 0.15),  # 10Y - 2Y
+        gdp_growth_qoq=_rand_pct(0.017, 0.003),  # Quarterly
+        gdp_growth_yoy=_rand_pct(0.065, 0.005),  # Annual
+        unemployment_rate=_rand_pct(0.072, 0.003),  # Indian unemployment
+        oil_price_wti=_rand_val(82.0, 0.08),  # Brent
+        gold_price=_rand_val(65000.0, 0.05),  # INR per 10g approx
+        copper_price=_rand_val(850.0, 0.06),  # INR per kg approx
+        hy_spread=_rand_pct(250, 40),  # Indian credit spreads
+        ig_spread=_rand_pct(80, 15),
+        dxy_index=_rand_val(104.5, 0.03),  # DXY
         eurusd=_rand_val(1.082, 0.02),
         usdjpy=_rand_val(149.5, 0.02),
-        vix=_rand_val(18.5, 0.15),
-        consumer_confidence=_rand_val(98.5, 0.05),
-        ism_manufacturing=_rand_val(48.5, 0.04),
-        ism_services=_rand_val(53.2, 0.03),
+        vix=_rand_val(18.5, 0.15),  # India VIX
+        consumer_confidence=_rand_val(120.0, 0.05),  # RBI Consumer Confidence
+        ism_manufacturing=_rand_val(55.2, 0.04),  # PMI Manufacturing
+        ism_services=_rand_val(58.0, 0.03),  # PMI Services
     )
 
 
@@ -306,16 +306,17 @@ def generate_macro_snapshot() -> MacroSnapshot:
 def generate_macro_indicators() -> List[MacroIndicator]:
     indicators = []
     specs = [
-        ("CPI (YoY)", 3.2, 3.4, "monthly", "BLS"),
-        ("Core PCE (YoY)", 2.8, 2.9, "monthly", "BEA"),
-        ("Fed Funds Rate", 5.25, 5.50, "periodic", "Federal Reserve"),
-        ("10Y Treasury Yield", 4.45, 4.60, "daily", "US Treasury"),
-        ("GDP Growth (QoQ Ann.)", 2.8, 3.1, "quarterly", "BEA"),
-        ("Unemployment Rate", 3.8, 3.9, "monthly", "BLS"),
-        ("ISM Manufacturing", 48.5, 47.9, "monthly", "ISM"),
-        ("ISM Services", 53.2, 52.7, "monthly", "ISM"),
-        ("WTI Oil Price", 78.0, 74.5, "daily", "EIA"),
-        ("VIX", 18.5, 16.2, "daily", "CBOE"),
+        ("CPI (YoY)", 5.1, 5.3, "monthly", "NSO"),
+        ("WPI (YoY)", 1.2, 1.0, "monthly", "Office of Economic Adviser"),
+        ("RBI Repo Rate", 6.50, 6.50, "periodic", "Reserve Bank of India"),
+        ("10Y G-Sec Yield", 7.15, 7.20, "daily", "RBI"),
+        ("GDP Growth (YoY)", 6.5, 6.8, "quarterly", "NSO"),
+        ("Unemployment Rate", 7.2, 7.0, "monthly", "CMIE"),
+        ("IIP Growth (YoY)", 3.8, 4.1, "monthly", "CSO"),
+        ("PMI Manufacturing", 55.2, 54.8, "monthly", "S&P Global"),
+        ("Brent Oil Price", 82.0, 79.5, "daily", "EIA"),
+        ("India VIX", 18.5, 16.2, "daily", "NSE"),
+        ("INR/USD", 83.5, 83.2, "daily", "RBI"),
     ]
     for name, val, prior, freq, src in specs:
         v = _rand_val(val, 0.02)
@@ -333,18 +334,18 @@ def generate_macro_indicators() -> List[MacroIndicator]:
 # ─── News Feed ───────────────────────────────────────────────────────────────
 
 NEWS_TEMPLATES = [
-    ("Fed signals patience on rate cuts amid sticky inflation", ["JPM","BAC","GS"], [Sector.FINANCIALS], Sentiment.NEGATIVE, 0.85),
-    ("NVIDIA reports record data-center revenue on AI demand surge", ["NVDA"], [Sector.TECHNOLOGY], Sentiment.VERY_POSITIVE, 0.95),
-    ("Oil prices slip as OPEC+ considers production increase", ["XOM","CVX"], [Sector.ENERGY], Sentiment.NEGATIVE, 0.80),
-    ("Apple launches new AI features across product lineup", ["AAPL"], [Sector.TECHNOLOGY], Sentiment.POSITIVE, 0.88),
-    ("Healthcare sector rallies on FDA approval news", ["LLY","JNJ"], [Sector.HEALTHCARE], Sentiment.POSITIVE, 0.82),
-    ("Amazon Web Services growth accelerates in Q4", ["AMZN"], [Sector.CONSUMER_DISC], Sentiment.VERY_POSITIVE, 0.90),
-    ("Tesla misses delivery targets, shares under pressure", ["TSLA"], [Sector.CONSUMER_DISC], Sentiment.NEGATIVE, 0.87),
-    ("JPMorgan raises dividend, announces buyback program", ["JPM"], [Sector.FINANCIALS], Sentiment.POSITIVE, 0.84),
-    ("Microsoft Azure revenue growth beats estimates", ["MSFT"], [Sector.TECHNOLOGY], Sentiment.POSITIVE, 0.91),
-    ("Macro headwinds weigh on industrial sector outlook", ["CAT","HON"], [Sector.INDUSTRIALS], Sentiment.NEGATIVE, 0.75),
-    ("Consumer staples resilient despite margin pressure", ["PG","KO"], [Sector.CONSUMER_STAPLES], Sentiment.NEUTRAL, 0.70),
-    ("Alphabet beats on search revenue, cloud growth strong", ["GOOGL"], [Sector.COMMUNICATION], Sentiment.POSITIVE, 0.89),
+    ("RBI signals patience on rate cuts amid sticky inflation", ["HDFCBANK.NS","ICICIBANK.NS","KOTAKBANK.NS"], [Sector.FINANCIALS], Sentiment.NEGATIVE, 0.85),
+    ("Reliance reports record Jio revenue on 5G adoption surge", ["RELIANCE.NS"], [Sector.ENERGY], Sentiment.VERY_POSITIVE, 0.95),
+    ("Oil prices slip as OPEC+ considers production increase", ["RELIANCE.NS"], [Sector.ENERGY], Sentiment.NEGATIVE, 0.80),
+    ("TCS launches new AI solutions for Indian enterprises", ["TCS.NS"], [Sector.TECHNOLOGY], Sentiment.POSITIVE, 0.88),
+    ("Pharma sector rallies on USFDA approval news", ["SUNPHARMA.NS","DRREDDY.NS"], [Sector.HEALTHCARE], Sentiment.POSITIVE, 0.82),
+    ("Maruti Suzuki sales growth accelerates in Q4", ["MARUTI.NS"], [Sector.CONSUMER_DISC], Sentiment.VERY_POSITIVE, 0.90),
+    ("ITC misses earnings targets, shares under pressure", ["ITC.NS"], [Sector.CONSUMER_STAPLES], Sentiment.NEGATIVE, 0.87),
+    ("HDFC Bank raises dividend, announces buyback program", ["HDFCBANK.NS"], [Sector.FINANCIALS], Sentiment.POSITIVE, 0.84),
+    ("Infosys cloud revenue growth beats estimates", ["INFY.NS"], [Sector.TECHNOLOGY], Sentiment.POSITIVE, 0.91),
+    ("Macro headwinds weigh on industrial sector outlook", ["LT.NS","ADANIPORTS.NS"], [Sector.INDUSTRIALS], Sentiment.NEGATIVE, 0.75),
+    ("Consumer staples resilient despite margin pressure", ["HINDUNILVR.NS","ITC.NS"], [Sector.CONSUMER_STAPLES], Sentiment.NEUTRAL, 0.70),
+    ("Bharti Airtel beats on subscriber revenue, Jio competition strong", ["BHARTIARTL.NS"], [Sector.COMMUNICATION], Sentiment.POSITIVE, 0.89),
 ]
 
 def generate_news_feed() -> List[NewsItem]:

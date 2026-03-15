@@ -246,7 +246,7 @@ class AssetManagementIntelligenceSystem:
             "╠══════════════════════════════════════════════════════════════════════╣",
             "║  MACRO ENVIRONMENT                                                   ║",
             f"║    Regime: {macro.current_regime.value:<20} Confidence: {macro.regime_confidence:.0%}              ║",
-            f"║    CPI: {r['dataset'].macro_snapshot.cpi_yoy:.1f}%   Rates: {r['dataset'].macro_snapshot.fed_funds_rate:.2f}%   10Y: {r['dataset'].macro_snapshot.us_10y_yield:.2f}%   VIX: {r['dataset'].macro_snapshot.vix:.1f}  ║",
+            f"║    CPI: {r['dataset'].macro_snapshot.cpi_yoy:.1f}%   Repo: {r['dataset'].macro_snapshot.fed_funds_rate:.2f}%   10Y: {r['dataset'].macro_snapshot.us_10y_yield:.2f}%   VIX: {r['dataset'].macro_snapshot.vix:.1f}  ║",
             "╠══════════════════════════════════════════════════════════════════════╣",
             "║  ALERTS                                                              ║",
         ]
