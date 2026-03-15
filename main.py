@@ -233,7 +233,7 @@ class AssetManagementIntelligenceSystem:
             "╔══════════════════════════════════════════════════════════════════════╗",
             f"║  AMIS PORTFOLIO DASHBOARD  —  {datetime.now().strftime('%Y-%m-%d %H:%M')}{'':>16}║",
             "╠══════════════════════════════════════════════════════════════════════╣",
-            f"║  Fund:   {port.portfolio_name:<32} NAV: ₹{port.total_nav/1e6:.0f}M       ║",
+            f"║  Fund:   {port.portfolio_name:<32} NAV: ₹{port.total_nav/1e7:.0f} crores       ║",
             f"║  PM:     {port.portfolio_manager:<32} Positions: {len(port.holdings):<10}║",
             "╠══════════════════════════════════════════════════════════════════════╣",
             "║  PERFORMANCE                                                         ║",
