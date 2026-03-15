@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AMIS — Asset Management Intelligence System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --surface2: #21262d;
+    --border:   #30363d;
+    --text:     #e6edf3;
+    --muted:    #8b949e;
+    --blue:     #58a6ff;
+    --green:    #3fb950;
+    --yellow:   #d29922;
+    --red:      #f85149;
+    --purple:   #bc8cff;
+    --teal:     #39d0d8;
+    --orange:   #f0883e;
+    --accent:   #1f6feb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; min-height: 100vh; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a2332 100%);
+    border-bottom: 1px solid var(--border); padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo { width: 36px; height: 36px; background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .header-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .header-subtitle { font-size: 11px; color: var(--muted); }
+  .live-badge { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3);
+    padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Nav tabs */
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; gap: 0; }
+  .nav-tab { padding: 12px 18px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* Layout */
+  .main { padding: 20px 24px; max-width: 1600px; margin: 0 auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .grid { display: grid; gap: 16px; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-2-1 { grid-template-columns: 2fr 1fr; }
+  .grid-1-2 { grid-template-columns: 1fr 2fr; }
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+  .span-4 { grid-column: span 4; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .card-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .card-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+
+  /* KPI Cards */
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .kpi-value { font-size: 26px; font-weight: 700; line-height: 1; }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .kpi-change { font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neu { color: var(--muted); }
+  .yellow { color: var(--yellow); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { color: var(--muted); font-weight: 500; text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 8px 10px; border-bottom: 1px solid rgba(48,54,61,0.5); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(88,166,255,0.04); }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .badge-buy { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-sell { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .badge-hold { background: rgba(139,148,158,0.15); color: var(--muted); border: 1px solid rgba(139,148,158,0.3); }
+  .badge-sbu { background: rgba(63,185,80,0.25); color: #5cf57d; border: 1px solid rgba(63,185,80,0.5); }
+  .badge-ss { background: rgba(248,81,73,0.25); color: #ff7070; border: 1px solid rgba(248,81,73,0.5); }
+  .badge-critical { background: rgba(248,81,73,0.2); color: var(--red); }
+  .badge-high { background: rgba(240,136,62,0.2); color: var(--orange); }
+  .badge-moderate { background: rgba(210,153,34,0.2); color: var(--yellow); }
+  .badge-low { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-ow { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-uw { background: rgba(248,81,73,0.15); color: var(--red); }
+  .badge-neutral { background: rgba(139,148,158,0.1); color: var(--muted); }
+
+  /* Progress bars */
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+
+  /* Alert cards */
+  .alert-item { border-left: 3px solid; padding: 10px 14px; margin-bottom: 8px; border-radius: 0 6px 6px 0;
+    background: var(--surface2); }
+  .alert-critical { border-color: var(--red); }
+  .alert-high { border-color: var(--orange); }
+  .alert-moderate { border-color: var(--yellow); }
+  .alert-low { border-color: var(--green); }
+  .alert-title { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .alert-body { font-size: 11px; color: var(--muted); }
+  .alert-action { font-size: 11px; color: var(--blue); margin-top: 4px; }
+
+  /* Agent pipeline */
+  .agent-pipeline { display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+  .agent-node { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 110px; position: relative; }
+  .agent-node:not(:last-child)::after { content: '→'; position: absolute; right: -14px; top: 28px; color: var(--border); font-size: 18px; }
+  .agent-circle { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;
+    border: 2px solid; transition: all 0.3s; }
+  .agent-name { font-size: 10px; color: var(--muted); text-align: center; max-width: 90px; line-height: 1.3; }
+  .agent-status { font-size: 9px; font-weight: 600; text-align: center; }
+  .agent-ok { border-color: var(--green); background: rgba(63,185,80,0.1); color: var(--green); }
+  .agent-ok + .agent-name + .agent-status { color: var(--green); }
+
+  /* Charts */
+  .chart-container { position: relative; }
+
+  /* Regime badge */
+  .regime-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; }
+
+  /* Gauge */
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+
+  /* Scrollable */
+  .scroll-y { overflow-y: auto; max-height: 300px; }
+  .scroll-y::-webkit-scrollbar { width: 4px; }
+  .scroll-y::-webkit-scrollbar-track { background: var(--surface2); }
+  .scroll-y::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Page header */
+  .page-header { margin-bottom: 20px; }
+  .page-header h2 { font-size: 18px; font-weight: 700; }
+  .page-header p { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+  /* Rebalancing */
+  .delta-bar { height: 8px; border-radius: 4px; display: inline-block; vertical-align: middle; }
+
+  @media (max-width: 1200px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .grid-4, .grid-3, .grid-2, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; }
+    .span-2, .span-3, .span-4 { grid-column: span 1; }
+    .nav { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">📊</div>
+    <div>
+      <div class="header-title">AMIS — Asset Management Intelligence System</div>
+      <div class="header-subtitle">AI-Powered Multi-Agent Investment Platform · AMIS Alpha Equity Fund · PM: Suchit Dubey</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <div style="font-size:11px;color:var(--muted)">As of: <span id="ts" style="color:var(--text)">—</span></div>
+    <div class="live-badge"><div class="live-dot"></div>Live</div>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <div class="nav-tab active" onclick="showPage('dashboard')">🏠 Dashboard</div>
+  <div class="nav-tab" onclick="showPage('portfolio')">📈 Portfolio</div>
+  <div class="nav-tab" onclick="showPage('risk')">🛡️ Risk Monitor</div>
+  <div class="nav-tab" onclick="showPage('research')">🔬 Research</div>
+  <div class="nav-tab" onclick="showPage('macro')">🌍 Macro</div>
+  <div class="nav-tab" onclick="showPage('scenarios')">⚡ Scenarios</div>
+  <div class="nav-tab" onclick="showPage('alerts')">🔔 Alerts</div>
+  <div class="nav-tab" onclick="showPage('report')">📄 Report</div>
+  <div class="nav-tab" onclick="showPage('workflow')">🤖 Agents</div>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════ DASHBOARD ═══════════════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="page-header">
+    <h2>Portfolio Dashboard</h2>
+    <p>Real-time overview of performance, risk, and AI-generated insights</p>
+  </div>
+  <div class="grid grid-4" style="margin-bottom:16px">
+    <div class="kpi">
+      <div class="kpi-label">NAV</div>
+      <div class="kpi-value" style="color:var(--blue)">$500M</div>
+      <div class="kpi-sub">20 positions · 4.5% cash</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">YTD Return</div>
+      <div class="kpi-value pos">+7.82%</div>
+      <div class="kpi-change neg">Alpha: −0.38% vs S&P 500</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Portfolio VaR (1d, 95%)</div>
+      <div class="kpi-value yellow">2.94%</div>
+      <div class="kpi-sub">5d VaR: 6.57%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Active Alerts</div>
+      <div class="kpi-value pos">0</div>
+      <div class="kpi-sub">All thresholds normal</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2-1" style="margin-bottom:16px">
+    <!-- Performance chart -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">YTD Cumulative Returns</span>
+        <span class="card-badge badge-buy">+7.82% YTD</span>
+      </div>
+      <div class="chart-container" style="height:200px">
+        <canvas id="perfChart"></canvas>
+      </div>
+    </div>
+    <!-- Risk gauges -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Risk Metrics</span>
+        <span class="card-badge badge-high">HIGH</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div style="display:flex;justify-content:space-between"><span style="font-size:11px">Sharpe Ratio</span><span style="font-size:11px;color:var(--yellow)">0.10</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:10%;background:var(--yellow)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between"><span style="font-size:11px">Sortino Ratio</span><span style="font-size:11px;color:var(--yellow)">0.14</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:14%;background:var(--yellow)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between"><span style="font-size:11px">Liquidity Score</span><span style="font-size:11px;color:var(--green)">0.80 / 1.0</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:80%;background:var(--green)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between"><span style="font-size:11px">Beta to Benchmark</span><span style="font-size:11px;color:var(--blue)">0.93×</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:70%;background:var(--blue)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between"><span style="font-size:11px">Quality Factor (ROIC)</span><span style="font-size:11px;color:var(--purple)">0.356</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:72%;background:var(--purple)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <!-- Sector exposure -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Sector Allocation</span></div>
+      <div class="chart-container" style="height:200px"><canvas id="sectorChart"></canvas></div>
+    </div>
+    <!-- Macro regime -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Macro Regime</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="regime-badge" style="background:rgba(210,153,34,0.15);color:var(--yellow);border:1px solid rgba(210,153,34,0.3)">
+          📊 PEAK CYCLE <span style="font-size:11px;font-weight:400;color:var(--muted)">40% confidence</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
+          <div><div class="kpi-label">CPI YoY</div><div style="font-size:16px;font-weight:700;color:var(--yellow)">3.1%</div></div>
+          <div><div class="kpi-label">Fed Funds</div><div style="font-size:16px;font-weight:700;color:var(--orange)">5.12%</div></div>
+          <div><div class="kpi-label">10Y Yield</div><div style="font-size:16px;font-weight:700;color:var(--blue)">4.38%</div></div>
+          <div><div class="kpi-label">VIX</div><div style="font-size:16px;font-weight:700;color:var(--green)">20.3</div></div>
+          <div><div class="kpi-label">Yield Curve</div><div style="font-size:16px;font-weight:700;color:var(--red)">−0.35%</div></div>
+          <div><div class="kpi-label">HY Spread</div><div style="font-size:16px;font-weight:700;color:var(--green)">330bps</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- AI Signals -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">AI Asset Signals</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div id="signalRows"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PORTFOLIO ═══════════════════ -->
+<div id="page-portfolio" class="page">
+  <div class="page-header"><h2>Portfolio Holdings</h2><p>Current allocations and proposed rebalancing</p></div>
+  <div class="grid grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Holdings</span></div>
+      <div class="scroll-y">
+        <table>
+          <thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Weight</th><th>P&amp;L</th><th>Signal</th><th>Conv.</th></tr></thead>
+          <tbody id="holdingsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Proposed Rebalancing</span><span class="card-badge badge-moderate">14 trades</span></div>
+      <div class="scroll-y">
+        <table>
+          <thead><tr><th>Ticker</th><th>Action</th><th>Current</th><th>Target</th><th>Delta</th></tr></thead>
+          <tbody id="rebalBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Weight Distribution (Top 15)</span></div>
+    <div class="chart-container" style="height:200px"><canvas id="weightChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ RISK ═══════════════════ -->
+<div id="page-risk" class="page">
+  <div class="page-header"><h2>Risk Monitor</h2><p>Real-time risk surveillance across all dimensions</p></div>
+  <div class="grid grid-4" style="margin-bottom:16px">
+    <div class="kpi"><div class="kpi-label">Overall Risk</div><div class="kpi-value" style="color:var(--orange)">HIGH</div><div class="kpi-sub">VaR triggers threshold</div></div>
+    <div class="kpi"><div class="kpi-label">VaR (1d, 95%)</div><div class="kpi-value yellow">2.94%</div><div class="kpi-sub">5d VaR: 6.57%</div></div>
+    <div class="kpi"><div class="kpi-label">Max Drawdown YTD</div><div class="kpi-value neg">−0.74%</div><div class="kpi-sub">Within tolerance</div></div>
+    <div class="kpi"><div class="kpi-label">Days to Liquidate 90%</div><div class="kpi-value pos">3.0d</div><div class="kpi-sub">Liquidity adequate</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Sector Exposure vs Limits</span></div>
+      <div class="chart-container" style="height:220px"><canvas id="sectorRiskChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Factor Exposures</span></div>
+      <div class="chart-container" style="height:220px"><canvas id="factorChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Stress Test Results</span></div>
+      <div class="chart-container" style="height:220px"><canvas id="stressChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Vulnerabilities</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="alert-item alert-high">
+          <div class="alert-title">Tech sector at 23.5% — close to 35% limit</div>
+          <div class="alert-body">Monitor AAPL, MSFT, NVDA concentration. Watch macro signals for sector rotation.</div>
+        </div>
+        <div class="alert-item alert-high">
+          <div class="alert-title">Daily VaR 2.94% — elevated</div>
+          <div class="alert-body">Volatility environment warrants active position monitoring. Consider trailing stops.</div>
+        </div>
+        <div class="alert-item alert-moderate">
+          <div class="alert-title">Sharpe ratio 0.10 — low risk-adjusted return</div>
+          <div class="alert-body">Portfolio not yet compensating adequately for risk taken. Review lower-signal positions.</div>
+        </div>
+        <div class="alert-item alert-low">
+          <div class="alert-title">Inverted yield curve (−0.35%)</div>
+          <div class="alert-body">Historical recession predictor; maintain defensive buffer in macro overlay.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ RESEARCH ═══════════════════ -->
+<div id="page-research" class="page">
+  <div class="page-header"><h2>Research Intelligence</h2><p>AI-generated fundamental analysis across 20 securities</p></div>
+  <div class="grid grid-3" style="margin-bottom:16px">
+    <div class="kpi"><div class="kpi-label">Strong Buy / Buy</div><div class="kpi-value pos" id="buyCount">—</div></div>
+    <div class="kpi"><div class="kpi-label">Hold</div><div class="kpi-value neu" id="holdCount">—</div></div>
+    <div class="kpi"><div class="kpi-label">Sell / Strong Sell</div><div class="kpi-value neg" id="sellCount">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Research Summaries</span></div>
+    <table>
+      <thead><tr><th>Ticker</th><th>Company</th><th>Rating</th><th>Price Target</th><th>Upside</th><th>Conviction</th><th>Revenue Trend</th></tr></thead>
+      <tbody id="researchBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ MACRO ═══════════════════ -->
+<div id="page-macro" class="page">
+  <div class="page-header"><h2>Macro Intelligence</h2><p>Macroeconomic regime detection and sector implications</p></div>
+  <div class="grid grid-4" style="margin-bottom:16px">
+    <div class="kpi"><div class="kpi-label">CPI YoY</div><div class="kpi-value yellow">3.10%</div><div class="kpi-sub">Above 2% target</div></div>
+    <div class="kpi"><div class="kpi-label">Fed Funds Rate</div><div class="kpi-value" style="color:var(--orange)">5.12%</div><div class="kpi-sub">Restrictive territory</div></div>
+    <div class="kpi"><div class="kpi-label">GDP Growth (QoQ ann.)</div><div class="kpi-value pos">+2.8%</div><div class="kpi-sub">Solid expansion</div></div>
+    <div class="kpi"><div class="kpi-label">Unemployment</div><div class="kpi-value pos">3.8%</div><div class="kpi-sub">Near full employment</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Macro Indicators</span></div>
+      <div class="chart-container" style="height:220px"><canvas id="macroRadar"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Sector Tilts (Peak Cycle)</span></div>
+      <div class="scroll-y">
+        <table>
+          <thead><tr><th>Sector</th><th>Tilt</th><th>Rationale</th></tr></thead>
+          <tbody id="sectorTiltsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cross-Asset Signals</span></div>
+      <div class="chart-container" style="height:200px"><canvas id="assetSignalChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Macro Risk Factors</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="alert-item alert-high">
+          <div class="alert-title">Inverted Yield Curve (−0.35%)</div>
+          <div class="alert-body">10Y–2Y spread deeply negative. Historical recession probability elevated over next 12–18 months.</div>
+        </div>
+        <div class="alert-item alert-moderate">
+          <div class="alert-title">Sticky Inflation (CPI 3.1%)</div>
+          <div class="alert-body">Progress toward 2% target is ongoing but rate cut path remains highly uncertain.</div>
+        </div>
+        <div class="alert-item alert-low">
+          <div class="alert-title">ISM Manufacturing below 50</div>
+          <div class="alert-body">Manufacturing in contraction. Services sector remains resilient (53.2).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCENARIOS ═══════════════════ -->
+<div id="page-scenarios" class="page">
+  <div class="page-header"><h2>Scenario Simulation</h2><p>Stress-testing portfolio resilience across 8 adverse scenarios</p></div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header"><span class="card-title">Scenario Impact Overview</span><span class="card-badge badge-critical">3 scenarios >15% loss</span></div>
+    <div class="chart-container" style="height:250px"><canvas id="scenarioChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Scenario Details</span></div>
+    <table>
+      <thead><tr><th>Scenario</th><th>Portfolio Impact</th><th>Recovery</th><th>Action</th><th>Description</th></tr></thead>
+      <tbody id="scenarioBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ ALERTS ═══════════════════ -->
+<div id="page-alerts" class="page">
+  <div class="page-header"><h2>Monitoring &amp; Alerts</h2><p>Real-time surveillance across 7 alert categories</p></div>
+  <div class="grid grid-4" style="margin-bottom:16px">
+    <div class="kpi"><div class="kpi-label">Total Active</div><div class="kpi-value pos">0</div></div>
+    <div class="kpi"><div class="kpi-label">Critical</div><div class="kpi-value pos">0</div></div>
+    <div class="kpi"><div class="kpi-label">High</div><div class="kpi-value pos">0</div></div>
+    <div class="kpi"><div class="kpi-label">Moderate / Low</div><div class="kpi-value pos">0 / 0</div></div>
+  </div>
+  <div class="card">
+    <div style="padding:30px;text-align:center;color:var(--muted)">
+      <div style="font-size:40px;margin-bottom:12px">✅</div>
+      <div style="font-size:16px;font-weight:600;color:var(--green)">All systems normal</div>
+      <div style="font-size:12px;margin-top:6px">No active alerts — portfolio within all monitoring thresholds<br>
+      Continuous surveillance running across: earnings, macro, concentration, liquidity, volatility, drawdown, credit</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><span class="card-title">Alert Categories Monitored</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:4px">
+      <div style="padding:12px;background:var(--surface2);border-radius:6px">
+        <div style="font-size:16px;margin-bottom:6px">📉</div>
+        <div style="font-size:11px;font-weight:600">Earnings Downgrade</div>
+        <div style="font-size:10px;color:var(--muted)">EPS miss &gt;5%, guidance cuts</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:6px">
+        <div style="font-size:16px;margin-bottom:6px">🌍</div>
+        <div style="font-size:11px;font-weight:600">Macro Regime Shift</div>
+        <div style="font-size:10px;color:var(--muted)">Regime changes, yield curve signals</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:6px">
+        <div style="font-size:16px;margin-bottom:6px">🎯</div>
+        <div style="font-size:11px;font-weight:600">Concentration Breach</div>
+        <div style="font-size:10px;color:var(--muted)">Sector &gt;30%, top-10 &gt;75%</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:6px">
+        <div style="font-size:16px;margin-bottom:6px">💧</div>
+        <div style="font-size:11px;font-weight:600">Liquidity Risk</div>
+        <div style="font-size:10px;color:var(--muted)">Score &lt;0.65, liquidation horizon</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:6px">
+        <div style="font-size:16px;margin-bottom:6px">⚡</div>
+        <div style="font-size:11px;font-weight:600">Volatility Spike</div>
+        <div style="font-size:10px;color:var(--muted)">VIX &gt;28, stress event detection</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:6px">
+        <div style="font-size:16px;margin-bottom:6px">📊</div>
+        <div style="font-size:11px;font-weight:600">Drawdown Alert</div>
+        <div style="font-size:10px;color:var(--muted)">Position loss &gt;15%, stop-loss</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:6px">
+        <div style="font-size:16px;margin-bottom:6px">🏦</div>
+        <div style="font-size:11px;font-weight:600">Credit Stress</div>
+        <div style="font-size:10px;color:var(--muted)">HY spread &gt;450bps, IG widening</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ REPORT ═══════════════════ -->
+<div id="page-report" class="page">
+  <div class="page-header"><h2>Investor Report</h2><p>Monthly AI-generated investor communication</p></div>
+  <div class="grid grid-4" style="margin-bottom:16px">
+    <div class="kpi"><div class="kpi-label">Report ID</div><div class="kpi-value" style="font-size:18px;color:var(--purple)">RPT-A3C6</div></div>
+    <div class="kpi"><div class="kpi-label">Portfolio Return</div><div class="kpi-value pos">+7.82%</div></div>
+    <div class="kpi"><div class="kpi-label">Benchmark Return</div><div class="kpi-value neu">+8.20%</div></div>
+    <div class="kpi"><div class="kpi-label">Active Alpha</div><div class="kpi-value neg">−0.38%</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Recommended Actions</span></div>
+      <div id="recsBody" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Top Contributors &amp; Detractors</span></div>
+      <div class="chart-container" style="height:200px"><canvas id="attrChart"></canvas></div>
+    </div>
+    <div class="card span-2">
+      <div class="card-header"><span class="card-title">Market Outlook Narrative</span></div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;padding:4px">
+        The portfolio is operating in a <strong style="color:var(--yellow)">Peak cycle</strong> macroeconomic environment characterized by persistently elevated inflation (CPI 3.1%), restrictive monetary policy (Fed Funds 5.12%), and an inverted yield curve (−0.35%). While equity markets have held up reasonably well, the late-cycle dynamics argue for increased selectivity and a defensive tilt in sector positioning.<br><br>
+        <strong style="color:var(--text)">Sector Positioning:</strong> The macro overlay recommends overweighting Energy, Materials, Consumer Staples, and Utilities — traditional late-cycle beneficiaries — while underweighting Consumer Discretionary and Communication Services where valuation and demand sensitivity create downside risk.<br><br>
+        <strong style="color:var(--text)">Risk Posture:</strong> Portfolio VaR of 2.94% (1-day, 95%) is elevated and warrants close monitoring. The most adverse scenario modeled (2008 Crisis Replay) could generate a −35.2% drawdown, underscoring the importance of maintaining defensive positions and potential tail-risk hedges.<br><br>
+        <strong style="color:var(--text)">AI Model Conviction:</strong> The Research Intelligence Agent identifies <span style="color:var(--green)">LLY, NVDA, MSFT</span> as top-conviction Buy ideas based on strong revenue acceleration, margin expansion, and positive earnings momentum. The Portfolio Construction Agent has positioned these names at overweight relative to current holdings.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ WORKFLOW ═══════════════════ -->
+<div id="page-workflow" class="page">
+  <div class="page-header"><h2>Multi-Agent Workflow</h2><p>8-agent pipeline architecture — all systems operational</p></div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><span class="card-title">Agent Pipeline</span><span class="card-badge badge-buy">8 / 8 Active</span></div>
+    <div class="agent-pipeline" style="padding:16px 8px">
+      <div class="agent-node">
+        <div class="agent-circle agent-ok">📥</div>
+        <div class="agent-name">Data Ingestion</div>
+        <div class="agent-status" style="color:var(--green)">✓ LIVE</div>
+      </div>
+      <div class="agent-node">
+        <div class="agent-circle agent-ok">🔬</div>
+        <div class="agent-name">Research Intelligence</div>
+        <div class="agent-status" style="color:var(--green)">✓ LIVE</div>
+      </div>
+      <div class="agent-node">
+        <div class="agent-circle agent-ok">🌍</div>
+        <div class="agent-name">Macro Intelligence</div>
+        <div class="agent-status" style="color:var(--green)">✓ LIVE</div>
+      </div>
+      <div class="agent-node">
+        <div class="agent-circle agent-ok">🛡️</div>
+        <div class="agent-name">Risk Intelligence</div>
+        <div class="agent-status" style="color:var(--green)">✓ LIVE</div>
+      </div>
+      <div class="agent-node">
+        <div class="agent-circle agent-ok">⚖️</div>
+        <div class="agent-name">Portfolio Construction</div>
+        <div class="agent-status" style="color:var(--green)">✓ LIVE</div>
+      </div>
+      <div class="agent-node">
+        <div class="agent-circle agent-ok">⚡</div>
+        <div class="agent-name">Scenario Simulation</div>
+        <div class="agent-status" style="color:var(--green)">✓ LIVE</div>
+      </div>
+      <div class="agent-node">
+        <div class="agent-circle agent-ok">🔔</div>
+        <div class="agent-name">Monitoring &amp; Alerts</div>
+        <div class="agent-status" style="color:var(--green)">✓ LIVE</div>
+      </div>
+      <div class="agent-node">
+        <div class="agent-circle agent-ok">📄</div>
+        <div class="agent-name">Investor Reporting</div>
+        <div class="agent-status" style="color:var(--green)">✓ LIVE</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Agent Execution Summary</span></div>
+      <table>
+        <thead><tr><th>Agent</th><th>Outputs</th><th>Latency</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>01 — Data Ingestion</td><td>20 tickers, 12 news items</td><td>0.01s</td><td><span class="badge badge-buy">✓ OK</span></td></tr>
+          <tr><td>02 — Research Intelligence</td><td>20 summaries, 3 top picks</td><td>0.01s</td><td><span class="badge badge-buy">✓ OK</span></td></tr>
+          <tr><td>03 — Macro Intelligence</td><td>Peak regime, 9 sector tilts</td><td>&lt;0.01s</td><td><span class="badge badge-buy">✓ OK</span></td></tr>
+          <tr><td>04 — Risk Intelligence</td><td>HIGH risk, 8 stress tests</td><td>&lt;0.01s</td><td><span class="badge badge-buy">✓ OK</span></td></tr>
+          <tr><td>05 — Portfolio Construction</td><td>19 positions, 14 trades</td><td>&lt;0.01s</td><td><span class="badge badge-buy">✓ OK</span></td></tr>
+          <tr><td>06 — Scenario Simulation</td><td>8 scenarios, worst −35.2%</td><td>&lt;0.01s</td><td><span class="badge badge-buy">✓ OK</span></td></tr>
+          <tr><td>07 — Monitoring &amp; Alerts</td><td>0 alerts (all clear)</td><td>&lt;0.01s</td><td><span class="badge badge-buy">✓ OK</span></td></tr>
+          <tr><td>08 — Investor Reporting</td><td>Monthly report generated</td><td>&lt;0.01s</td><td><span class="badge badge-buy">✓ OK</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Human Oversight Layer</span></div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7">
+        <div style="margin-bottom:12px;padding:10px;background:rgba(88,166,255,0.08);border-radius:6px;border:1px solid rgba(88,166,255,0.2)">
+          <div style="color:var(--blue);font-weight:600;margin-bottom:4px">⚠️ HUMAN-IN-THE-LOOP DESIGN</div>
+          All AI signals and recommendations are advisory only. No trades are executed automatically. Portfolio managers retain full decision-making authority.
+        </div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+          <li>✅ <strong style="color:var(--text)">Agent outputs reviewed</strong> by PM before any action</li>
+          <li>✅ <strong style="color:var(--text)">Allocation changes</strong> require explicit PM approval</li>
+          <li>✅ <strong style="color:var(--text)">Risk alerts</strong> surfaced to compliance team simultaneously</li>
+          <li>✅ <strong style="color:var(--text)">Investor reports</strong> reviewed before distribution</li>
+          <li>✅ <strong style="color:var(--text)">Scenario results</strong> inform hedging decisions, not automate them</li>
+          <li>✅ <strong style="color:var(--text)">Full audit trail</strong> of all agent inputs/outputs maintained</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+const DATA = {
+  sectors: {"Technology":0.235,"Healthcare":0.14,"Communication Services":0.115,"Consumer Discretionary":0.105,"Financials":0.10,"Energy":0.06,"Consumer Staples":0.05,"Industrials":0.045,"Materials":0.025},
+  stress: {"2008 GFC Replay":-35.2,"COVID Shock":-27.1,"Global Recession":-26.8,"Tech Crash":-10.7,"Rate Spike +200bps":-9.6,"Oil Shock +60%":-6.4,"USD Crisis":-4.3,"Rate Spike 2022":-10.7},
+  factors: {"Market Beta":0.925,"Momentum":0.051,"Quality (ROIC)":0.356,"Value (1/PE)":0.041,"Size":0.801,"Low Vol":0.286},
+  signals: {"US Equities":-0.20,"Int'l Equities":-0.10,"EM Equities":-0.35,"US Treasuries":0.10,"High Yield":0.10,"Gold":0.00,"Oil/Energy":-0.10,"TIPS":0.35,"Cash":0.10},
+  tilts: {"Energy":"Overweight","Materials":"Overweight","Financials":"Neutral","Technology":"Neutral","Consumer Discretionary":"Underweight","Industrials":"Neutral","Communication Services":"Underweight","Healthcare":"Neutral","Consumer Staples":"Overweight","Utilities":"Overweight","Real Estate":"Underweight"},
+  scenarios: [
+    {n:"2008 Global Financial Crisis Replay",impact:-35.2,r:48,desc:"Systemic banking crisis; 50% equity selloff, credit freeze"},
+    {n:"COVID-19 Style Market Shock",impact:-27.1,r:6,desc:"Pandemic-induced dislocation; VIX to 85, rapid recovery"},
+    {n:"Global Recession (−3% GDP)",impact:-26.8,r:18,desc:"Deep recession; earnings fall 30%, unemployment rises to 8%"},
+    {n:"Tech Sector Crash (−35%)",impact:-10.7,r:24,desc:"AI/Tech valuation bubble bursts; multiple compression"},
+    {n:"Interest Rate Spike (+200bps)",impact:-9.6,r:12,desc:"Rapid Fed tightening; duration assets reprice sharply"},
+    {n:"2022 Rate Spike",impact:-10.7,r:12,desc:"Historical 2022-style tightening cycle replay"},
+    {n:"Oil Price Shock (+60%)",impact:-6.4,r:9,desc:"Geopolitical supply disruption; oil to $125/bbl"},
+    {n:"USD Currency Depreciation (−15%)",impact:-4.3,r:12,desc:"Dollar weakens; EM contagion, flight-to-safety"},
+  ],
+  research: [
+    {t:"LLY",c:"Eli Lilly & Co.",r:"Strong Buy",pt:900,up:11.1,conf:0.72,trend:"Strong accel (+28%)"},
+    {t:"NVDA",c:"NVIDIA Corporation",r:"Strong Buy",pt:985,up:12.6,conf:0.68,trend:"Strong accel (+122%)"},
+    {t:"MSFT",c:"Microsoft Corporation",r:"Buy",pt:465,up:12.1,conf:0.55,trend:"Healthy growth (+16%)"},
+    {t:"AMZN",c:"Amazon.com Inc.",r:"Buy",pt:208,up:12.4,conf:0.50,trend:"Healthy growth (+12%)"},
+    {t:"AAPL",c:"Apple Inc.",r:"Buy",pt:218,up:11.8,conf:0.45,trend:"Modest growth (+6%)"},
+    {t:"META",c:"Meta Platforms",r:"Buy",pt:572,up:12.2,conf:0.48,trend:"Strong growth (+22%)"},
+    {t:"GOOGL",c:"Alphabet Inc.",r:"Hold",pt:190,up:11.8,conf:0.28,trend:"Healthy growth (+9%)"},
+    {t:"JPM",c:"JPMorgan Chase",r:"Buy",pt:241,up:12.1,conf:0.42,trend:"Healthy growth (+10%)"},
+    {t:"UNH",c:"UnitedHealth Group",r:"Buy",pt:622,up:12.1,conf:0.40,trend:"Healthy growth (+12%)"},
+    {t:"JNJ",c:"Johnson & Johnson",r:"Hold",pt:177,up:12.0,conf:0.22,trend:"Modest growth (+4%)"},
+    {t:"XOM",c:"ExxonMobil",r:"Hold",pt:125,up:11.6,conf:0.18,trend:"Flat revenues (−4%)"},
+    {t:"CVX",c:"Chevron",r:"Hold",pt:177,up:12.0,conf:0.15,trend:"Flat revenues (−6%)"},
+    {t:"PG",c:"Procter & Gamble",r:"Buy",pt:188,up:11.9,conf:0.38,trend:"Modest growth (+4%)"},
+    {t:"KO",c:"Coca-Cola",r:"Hold",pt:71,up:12.7,conf:0.20,trend:"Modest growth (+3%)"},
+    {t:"TSLA",c:"Tesla Inc.",r:"Sell",pt:278,up:11.2,conf:0.22,trend:"Flat revenues (+2%)"},
+    {t:"BAC",c:"Bank of America",r:"Hold",pt:47,up:11.9,conf:0.18,trend:"Modest growth (+6%)"},
+    {t:"GS",c:"Goldman Sachs",r:"Buy",pt:550,up:12.2,conf:0.35,trend:"Modest growth (+8%)"},
+    {t:"CAT",c:"Caterpillar",r:"Hold",pt:409,up:12.1,conf:0.20,trend:"Modest growth (+3%)"},
+    {t:"HON",c:"Honeywell",r:"Hold",pt:241,up:12.1,conf:0.22,trend:"Modest growth (+5%)"},
+    {t:"LIN",c:"Linde PLC",r:"Buy",pt:510,up:12.1,conf:0.42,trend:"Healthy growth (+7%)"},
+  ],
+  holdings: [
+    {t:"AAPL",c:"Apple",s:"Technology",w:0.085,pnl:0.08},{t:"MSFT",c:"Microsoft",s:"Technology",w:0.080,pnl:0.12},
+    {t:"NVDA",c:"NVIDIA",s:"Technology",w:0.070,pnl:0.25},{t:"GOOGL",c:"Alphabet",s:"Comm. Services",w:0.065,pnl:0.06},
+    {t:"META",c:"Meta",s:"Comm. Services",w:0.050,pnl:0.18},{t:"JNJ",c:"J&J",s:"Healthcare",w:0.045,pnl:-0.02},
+    {t:"UNH",c:"UnitedHealth",s:"Healthcare",w:0.040,pnl:0.05},{t:"LLY",c:"Eli Lilly",s:"Healthcare",w:0.055,pnl:0.30},
+    {t:"JPM",c:"JPMorgan",s:"Financials",w:0.055,pnl:0.10},{t:"BAC",c:"Bank of America",s:"Financials",w:0.025,pnl:-0.04},
+    {t:"GS",c:"Goldman",s:"Financials",w:0.020,pnl:0.07},{t:"XOM",c:"ExxonMobil",s:"Energy",w:0.035,pnl:-0.06},
+    {t:"CVX",c:"Chevron",s:"Energy",w:0.025,pnl:-0.04},{t:"AMZN",c:"Amazon",s:"Cons. Disc.",w:0.075,pnl:0.14},
+    {t:"TSLA",c:"Tesla",s:"Cons. Disc.",w:0.030,pnl:-0.18},{t:"CAT",c:"Caterpillar",s:"Industrials",w:0.025,pnl:0.03},
+    {t:"HON",c:"Honeywell",s:"Industrials",w:0.020,pnl:0.02},{t:"PG",c:"P&G",s:"Cons. Staples",w:0.030,pnl:0.05},
+    {t:"KO",c:"Coca-Cola",s:"Cons. Staples",w:0.020,pnl:0.02},{t:"LIN",c:"Linde",s:"Materials",w:0.025,pnl:0.09},
+  ],
+  rebalancing: [
+    {t:"XOM",act:"BUY",curr:0.035,tgt:0.100,delta:0.065},{t:"PG",act:"BUY",curr:0.030,tgt:0.084,delta:0.054},
+    {t:"LIN",act:"BUY",curr:0.025,tgt:0.081,delta:0.056},{t:"CVX",act:"BUY",curr:0.025,tgt:0.056,delta:0.031},
+    {t:"AAPL",act:"SELL",curr:0.085,tgt:0.062,delta:-0.023},{t:"GOOGL",act:"SELL",curr:0.065,tgt:0.045,delta:-0.020},
+    {t:"META",act:"SELL",curr:0.050,tgt:0.038,delta:-0.012},{t:"TSLA",act:"SELL",curr:0.030,tgt:0.000,delta:-0.030},
+    {t:"LLY",act:"BUY",curr:0.055,tgt:0.072,delta:0.017},{t:"NVDA",act:"HOLD",curr:0.070,tgt:0.071,delta:0.001},
+  ],
+  recs: [
+    {cat:"RISK",txt:"Broaden portfolio diversification across additional names to reduce idiosyncratic risk"},
+    {cat:"MACRO",txt:"Increase Energy allocation per Peak cycle regime guidance — overweight signal active"},
+    {cat:"MACRO",txt:"Reduce Consumer Discretionary exposure; sector faces headwinds in current regime"},
+    {cat:"MACRO",txt:"Increase Consumer Staples allocation — defensive tilt warranted at cycle peak"},
+    {cat:"SIGNAL",txt:"High-conviction buy ideas: LLY (+11.1% expected return), NVDA (+12.6%), MSFT (+12.1%)"},
+    {cat:"SCENARIO",txt:"Tail risk: '2008 GFC Replay' could cause −35.2% drawdown — evaluate protective hedges"},
+  ],
+};
+
+// ── Navigation ───────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Timestamp ────────────────────────────────────────────────────────────
+document.getElementById('ts').textContent = new Date().toLocaleString();
+
+// ── Helpers ──────────────────────────────────────────────────────────────
+const C = {
+  blue:'#58a6ff', green:'#3fb950', yellow:'#d29922', red:'#f85149',
+  purple:'#bc8cff', teal:'#39d0d8', orange:'#f0883e', muted:'#8b949e',
+  surface:'#21262d', border:'#30363d', text:'#e6edf3'
+};
+const chartDefaults = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: C.muted, font:{size:10} } } },
+};
+
+// ── Build tables ─────────────────────────────────────────────────────────
+
+// Holdings
+const hBody = document.getElementById('holdingsBody');
+DATA.holdings.forEach(h => {
+  const res = DATA.research.find(r => r.t === h.t) || {};
+  const sig = res.conf || 0;
+  const conv = sig > 0.5 ? 'High' : sig > 0.3 ? 'Med' : 'Low';
+  const pnlColor = h.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+  hBody.innerHTML += `<tr>
+    <td style="font-weight:700">${h.t}</td>
+    <td>${h.c}</td>
+    <td style="color:var(--muted)">${h.s}</td>
+    <td>${(h.w*100).toFixed(1)}%</td>
+    <td style="color:${pnlColor};font-weight:600">${h.pnl>=0?'+':''}${(h.pnl*100).toFixed(1)}%</td>
+    <td><span class="badge ${sig>0.5?'badge-sbu':sig>0.3?'badge-buy':'badge-hold'}">${(sig).toFixed(2)}</span></td>
+    <td style="color:var(--muted)">${conv}</td>
+  </tr>`;
+});
+
+// Rebalancing
+const rbBody = document.getElementById('rebalBody');
+DATA.rebalancing.forEach(r => {
+  const cls = r.act === 'BUY' ? 'pos' : r.act === 'SELL' ? 'neg' : 'neu';
+  rbBody.innerHTML += `<tr>
+    <td style="font-weight:700">${r.t}</td>
+    <td><span class="badge ${r.act==='BUY'?'badge-buy':r.act==='SELL'?'badge-sell':'badge-hold'}">${r.act}</span></td>
+    <td>${(r.curr*100).toFixed(1)}%</td>
+    <td>${(r.tgt*100).toFixed(1)}%</td>
+    <td class="${cls}" style="font-weight:600">${r.delta>=0?'+':''}${(r.delta*100).toFixed(1)}%</td>
+  </tr>`;
+});
+
+// Research
+const buyCount = DATA.research.filter(r=>r.r.includes('Buy')).length;
+const holdCount = DATA.research.filter(r=>r.r==='Hold').length;
+const sellCount = DATA.research.filter(r=>r.r.includes('Sell')).length;
+document.getElementById('buyCount').textContent = buyCount;
+document.getElementById('holdCount').textContent = holdCount;
+document.getElementById('sellCount').textContent = sellCount;
+
+const resBody = document.getElementById('researchBody');
+DATA.research.forEach(r => {
+  const ratingClass = r.r==='Strong Buy'?'badge-sbu':r.r==='Buy'?'badge-buy':r.r==='Hold'?'badge-hold':r.r==='Sell'?'badge-sell':'badge-ss';
+  const upColor = r.up >= 0 ? 'var(--green)' : 'var(--red)';
+  const confColor = r.conf > 0.5 ? 'var(--green)' : r.conf > 0.3 ? 'var(--yellow)' : 'var(--muted)';
+  resBody.innerHTML += `<tr>
+    <td style="font-weight:700">${r.t}</td>
+    <td>${r.c}</td>
+    <td><span class="badge ${ratingClass}">${r.r}</span></td>
+    <td style="font-weight:600">$${r.pt}</td>
+    <td style="color:${upColor};font-weight:600">+${r.up.toFixed(1)}%</td>
+    <td style="color:${confColor}">${(r.conf*100).toFixed(0)}%</td>
+    <td style="color:var(--muted);font-size:11px">${r.trend}</td>
+  </tr>`;
+});
+
+// Sector Tilts
+const stBody = document.getElementById('sectorTiltsBody');
+const tiltRationale = {
+  "Energy":"Late-cycle commodity beneficiary","Materials":"Inflation hedge, industrial demand",
+  "Financials":"Benefits from higher rates marginally","Technology":"Neutral; high valuations at cycle peak",
+  "Consumer Discretionary":"Demand sensitivity; reduce exposure","Industrials":"Mixed; orders stable",
+  "Communication Services":"Ad spend cyclical; late-cycle risk","Healthcare":"Defensive; neutral in Peak",
+  "Consumer Staples":"Classic defensive overweight","Utilities":"Duration risk vs defensive quality",
+  "Real Estate":"Rate sensitivity; avoid in rising rate env.",
+};
+Object.entries(DATA.tilts).forEach(([s,t]) => {
+  const cls = t==='Overweight'?'badge-ow':t==='Underweight'?'badge-uw':'badge-neutral';
+  stBody.innerHTML += `<tr>
+    <td>${s}</td>
+    <td><span class="badge ${cls}">${t}</span></td>
+    <td style="color:var(--muted);font-size:11px">${tiltRationale[s]||''}</td>
+  </tr>`;
+});
+
+// Scenarios
+const scBody = document.getElementById('scenarioBody');
+DATA.scenarios.forEach(s => {
+  const action = s.impact < -15 ? '<span class="badge badge-critical">⚠️ Review</span>' : '<span class="badge badge-low">—</span>';
+  const color = s.impact < -25 ? 'var(--red)' : s.impact < -15 ? 'var(--orange)' : 'var(--yellow)';
+  scBody.innerHTML += `<tr>
+    <td style="font-weight:600">${s.n}</td>
+    <td style="color:${color};font-weight:700">${s.impact.toFixed(1)}%</td>
+    <td style="color:var(--muted)">${s.r} mo</td>
+    <td>${action}</td>
+    <td style="color:var(--muted);font-size:11px">${s.desc}</td>
+  </tr>`;
+});
+
+// Recommendations
+const recsDiv = document.getElementById('recsBody');
+const recCatColors = {RISK:'var(--orange)',MACRO:'var(--blue)',SIGNAL:'var(--green)',SCENARIO:'var(--yellow)',ALERT:'var(--red)'};
+DATA.recs.forEach((r,i) => {
+  recsDiv.innerHTML += `<div class="alert-item alert-moderate">
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <span class="badge" style="background:rgba(88,166,255,0.15);color:${recCatColors[r.cat]||'var(--blue)'};border:1px solid;min-width:64px;text-align:center">${r.cat}</span>
+      <div style="font-size:12px;color:var(--text)">${r.txt}</div>
+    </div>
+  </div>`;
+});
+
+// Asset Signals (dashboard)
+const sigDiv = document.getElementById('signalRows');
+Object.entries(DATA.signals).forEach(([asset, sig]) => {
+  const color = sig > 0.2 ? C.green : sig < -0.2 ? C.red : C.yellow;
+  const pct = Math.abs(sig) * 100;
+  const dir = sig >= 0 ? '▲' : '▼';
+  sigDiv.innerHTML += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+    <div style="width:110px;font-size:11px">${asset}</div>
+    <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+      <div style="height:100%;width:${pct}%;background:${color};border-radius:3px"></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:${color};width:48px;text-align:right">${dir} ${(sig*100).toFixed(0)}%</div>
+  </div>`;
+});
+
+// ── Charts ────────────────────────────────────────────────────────────────
+
+// Performance chart (simulated monthly returns)
+new Chart(document.getElementById('perfChart').getContext('2d'), {
+  type:'line',
+  data:{
+    labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets:[
+      {label:'Portfolio',data:[1.2,2.8,1.5,0.8,1.3,0.5,0.2,0.9,1.1,-0.3,0.4,0.5],
+       borderColor:C.blue,backgroundColor:'rgba(88,166,255,0.08)',fill:true,tension:0.4,borderWidth:2,pointRadius:3},
+      {label:'S&P 500',data:[1.5,2.2,1.8,0.6,1.0,0.7,0.3,0.8,1.2,-0.1,0.5,0.3],
+       borderColor:C.muted,backgroundColor:'transparent',borderDash:[4,4],tension:0.4,borderWidth:1.5,pointRadius:2},
+    ]
+  },
+  options:{...chartDefaults, scales:{
+    x:{ticks:{color:C.muted,font:{size:10}},grid:{color:'rgba(48,54,61,0.5)'}},
+    y:{ticks:{color:C.muted,font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(48,54,61,0.5)'}}
+  }}
+});
+
+// Sector donut
+new Chart(document.getElementById('sectorChart').getContext('2d'), {
+  type:'doughnut',
+  data:{
+    labels:Object.keys(DATA.sectors),
+    datasets:[{data:Object.values(DATA.sectors).map(v=>+(v*100).toFixed(1)),
+      backgroundColor:['#58a6ff','#3fb950','#bc8cff','#f0883e','#39d0d8','#d29922','#8b949e','#ff7b72','#7ee787'],
+      borderColor:'#161b22',borderWidth:2,hoverOffset:6}]
+  },
+  options:{...chartDefaults,plugins:{legend:{position:'right',labels:{color:C.muted,font:{size:10},boxWidth:10}}}}
+});
+
+// Weight bar chart
+const topHoldings = [...DATA.holdings].sort((a,b)=>b.w-a.w).slice(0,15);
+new Chart(document.getElementById('weightChart').getContext('2d'), {
+  type:'bar',
+  data:{
+    labels:topHoldings.map(h=>h.t),
+    datasets:[
+      {label:'Current %',data:topHoldings.map(h=>+(h.w*100).toFixed(1)),backgroundColor:'rgba(88,166,255,0.6)',borderRadius:3},
+    ]
+  },
+  options:{...chartDefaults,scales:{
+    x:{ticks:{color:C.muted,font:{size:10}},grid:{display:false}},
+    y:{ticks:{color:C.muted,font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(48,54,61,0.5)'}}
+  }}
+});
+
+// Sector risk vs limit
+new Chart(document.getElementById('sectorRiskChart').getContext('2d'), {
+  type:'bar',
+  data:{
+    labels:Object.keys(DATA.sectors),
+    datasets:[
+      {label:'Exposure %',data:Object.values(DATA.sectors).map(v=>+(v*100).toFixed(1)),
+       backgroundColor:Object.values(DATA.sectors).map(v=>v>0.30?'rgba(248,81,73,0.7)':'rgba(88,166,255,0.6)'),borderRadius:3},
+      {label:'Limit (35%)',data:Object.keys(DATA.sectors).map(()=>35),
+       type:'line',borderColor:C.red,borderDash:[4,4],borderWidth:1.5,pointRadius:0}
+    ]
+  },
+  options:{...chartDefaults,scales:{
+    x:{ticks:{color:C.muted,font:{size:9}},grid:{display:false}},
+    y:{ticks:{color:C.muted,font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(48,54,61,0.5)'},max:40}
+  }}
+});
+
+// Factor exposures
+new Chart(document.getElementById('factorChart').getContext('2d'), {
+  type:'radar',
+  data:{
+    labels:Object.keys(DATA.factors),
+    datasets:[{label:'Portfolio',data:Object.values(DATA.factors).map(v=>+(v*100).toFixed(1)),
+      backgroundColor:'rgba(88,166,255,0.15)',borderColor:C.blue,pointBackgroundColor:C.blue,borderWidth:2,pointRadius:4}]
+  },
+  options:{...chartDefaults,scales:{r:{ticks:{color:C.muted,backdropColor:'transparent',font:{size:9}},
+    grid:{color:C.border},pointLabels:{color:C.muted,font:{size:9}}}}}
+});
+
+// Stress chart
+const stressLabels = Object.keys(DATA.stress);
+const stressValues = Object.values(DATA.stress);
+new Chart(document.getElementById('stressChart').getContext('2d'), {
+  type:'bar',
+  data:{
+    labels:stressLabels,
+    datasets:[{label:'Portfolio Impact %',data:stressValues,
+      backgroundColor:stressValues.map(v=>v<-25?'rgba(248,81,73,0.7)':v<-15?'rgba(240,136,62,0.7)':'rgba(210,153,34,0.7)'),
+      borderRadius:3}]
+  },
+  options:{...chartDefaults,indexAxis:'y',scales:{
+    x:{ticks:{color:C.muted,font:{size:9},callback:v=>v+'%'},grid:{color:'rgba(48,54,61,0.5)'}},
+    y:{ticks:{color:C.muted,font:{size:9}},grid:{display:false}}
+  }}
+});
+
+// Macro radar
+new Chart(document.getElementById('macroRadar').getContext('2d'), {
+  type:'radar',
+  data:{
+    labels:['CPI','Fed Rate','GDP Growth','Employment','ISM Mfg','ISM Svcs','Consumer Conf.','VIX (inv)'],
+    datasets:[{label:'Current Conditions',
+      data:[62,82,56,78,47,77,59,60],
+      backgroundColor:'rgba(210,153,34,0.15)',borderColor:C.yellow,pointBackgroundColor:C.yellow,borderWidth:2,pointRadius:4}]
+  },
+  options:{...chartDefaults,scales:{r:{min:0,max:100,ticks:{color:C.muted,backdropColor:'transparent',font:{size:9},stepSize:25},
+    grid:{color:C.border},pointLabels:{color:C.muted,font:{size:9}}}}}
+});
+
+// Asset signal chart
+const sigLabels = Object.keys(DATA.signals);
+const sigValues = Object.values(DATA.signals);
+new Chart(document.getElementById('assetSignalChart').getContext('2d'), {
+  type:'bar',
+  data:{
+    labels:sigLabels,
+    datasets:[{label:'Signal',data:sigValues.map(v=>+(v*100).toFixed(0)),
+      backgroundColor:sigValues.map(v=>v>0?'rgba(63,185,80,0.6)':'rgba(248,81,73,0.6)'),borderRadius:3}]
+  },
+  options:{...chartDefaults,scales:{
+    x:{ticks:{color:C.muted,font:{size:9}},grid:{display:false}},
+    y:{ticks:{color:C.muted,font:{size:10},callback:v=>v},grid:{color:'rgba(48,54,61,0.5)'},min:-50,max:50}
+  }}
+});
+
+// Scenario chart
+new Chart(document.getElementById('scenarioChart').getContext('2d'), {
+  type:'bar',
+  data:{
+    labels:DATA.scenarios.map(s=>s.n.length>30?s.n.substring(0,28)+'…':s.n),
+    datasets:[{label:'Portfolio Impact %',data:DATA.scenarios.map(s=>s.impact),
+      backgroundColor:DATA.scenarios.map(s=>s.impact<-25?'rgba(248,81,73,0.7)':s.impact<-15?'rgba(240,136,62,0.7)':'rgba(210,153,34,0.7)'),
+      borderRadius:3}]
+  },
+  options:{...chartDefaults,scales:{
+    x:{ticks:{color:C.muted,font:{size:9}},grid:{display:false}},
+    y:{ticks:{color:C.muted,font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(48,54,61,0.5)'}}
+  }}
+});
+
+// Attribution chart
+const contribs = [
+  {t:'LLY',v:1.7},{t:'NVDA',v:1.8},{t:'AMZN',v:1.1},{t:'MSFT',v:1.0},{t:'META',v:0.9},
+  {t:'TSLA',v:-0.5},{t:'XOM',v:-0.2},{t:'BAC',v:-0.1},{t:'JNJ',v:-0.09},{t:'CVX',v:-0.1}
+].sort((a,b)=>b.v-a.v);
+new Chart(document.getElementById('attrChart').getContext('2d'), {
+  type:'bar',
+  data:{
+    labels:contribs.map(c=>c.t),
+    datasets:[{label:'Attribution %',data:contribs.map(c=>c.v),
+      backgroundColor:contribs.map(c=>c.v>0?'rgba(63,185,80,0.6)':'rgba(248,81,73,0.6)'),borderRadius:3}]
+  },
+  options:{...chartDefaults,scales:{
+    x:{ticks:{color:C.muted,font:{size:10}},grid:{display:false}},
+    y:{ticks:{color:C.muted,font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(48,54,61,0.5)'}}
+  }}
+});
+
+</script>
+</body>
+</html>
